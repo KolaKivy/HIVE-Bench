@@ -1,0 +1,2 @@
+_target_: vision_models.PE.PE
+model_name: PE-Spatial-L14-448

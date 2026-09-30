@@ -1,0 +1,2 @@
+_target_: vision_models.qwen3.Qwen3
+model_name: playground/Pretrained_models/Qwen3-VL-4B-Instruct

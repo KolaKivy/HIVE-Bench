@@ -1,0 +1,2 @@
+_target_: vision_models.mae.MAE
+model_name: facebook/vit-mae-base

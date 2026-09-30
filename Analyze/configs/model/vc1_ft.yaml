@@ -1,0 +1,3 @@
+_target_: vision_models.vc1.VC1
+model_name: facebook/vc1-base
+ckpt_dir: playground/Checkpoints/all_task_robotwin_vc1_ft/final_model/pytorch_model.pt

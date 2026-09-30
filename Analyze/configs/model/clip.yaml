@@ -1,0 +1,2 @@
+_target_: vision_models.clip.Clip
+model_name: openai/clip-vit-large-patch14

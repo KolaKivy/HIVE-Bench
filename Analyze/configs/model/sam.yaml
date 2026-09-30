@@ -1,0 +1,2 @@
+_target_: vision_models.sam.SAM
+model_name: facebook/sam-vit-huge

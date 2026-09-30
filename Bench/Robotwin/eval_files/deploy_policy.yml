@@ -1,0 +1,18 @@
+policy_name: model2robotwin_interface
+task_name: null
+task_config: null
+ckpt_setting: null
+seed: null
+instruction_type: unseen
+
+# HIVE-Bench Client Parameters
+host: "127.0.0.1"
+port: 5694
+unnorm_key: "new_embodiment"
+action_mode: "abs"
+normalization_mode: "min_max"  # options: min_max, q99
+# This checkpoint was trained with datasets.vla_data.include_state=false.
+use_state: false
+# Disabled: execute the checkpoint's absolute qpos prediction directly.
+# Set a positive value only when deliberately enabling the optional safety guard.
+max_joint_delta: null

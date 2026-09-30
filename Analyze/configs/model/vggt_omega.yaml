@@ -1,0 +1,13 @@
+# VGGT-Omega aggregator (facebook/VGGT-Omega): 224px -> 14x14 = 196 patch tokens, dim 2048.
+#
+# This is the encoder that was actually fine-tuned for the RoboTwin runs whose policy
+# config has `vision_model: vggt_omega` (see the checkpoint's own config.yaml). Use it as
+# the baseline when comparing against `vggt_ft` / `vggt_omega_ft`: the released
+# `vggt` config (facebook/VGGT-1B-Commercial) is a different aggregator
+# (`global_blocks`, no `attn.qkv.bias_mask`) and cannot hold those weights.
+_target_: vision_models.vggt_omega.VGGTOmegaModel
+model_name: facebook/VGGT-Omega
+weight_file: vggt_omega_1b_512.pt
+repo_path: third_party/VGGT_Omega
+image_size: 224
+token_mode: patch

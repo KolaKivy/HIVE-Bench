@@ -1,0 +1,26 @@
+student:
+  arch: vit_large
+  patch_size: 16
+  backbone_impl: lbot_vision
+  lbot_vision:
+    norm_layer: layernormbf16
+    ffn_layer: mlp
+    mask_k_bias: true
+    untie_cls_and_patch_norms: false
+    untie_global_and_local_cls_norm: false
+    pos_embed_rope_base: 100.0
+    pos_embed_rope_min_period: null
+    pos_embed_rope_max_period: null
+    pos_embed_rope_normalize_coords: separate
+    pos_embed_rope_shift_coords: null
+    pos_embed_rope_jitter_coords: null
+    pos_embed_rope_rescale_coords: 2
+    pos_embed_rope_dtype: fp32
+  layerscale: 1.0e-05
+  qkv_bias: true
+  proj_bias: true
+  ffn_bias: true
+  num_register_tokens: 4
+
+crops:
+  global_crops_size: 512

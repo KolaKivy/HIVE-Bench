@@ -1,0 +1,2 @@
+_target_: vision_models.C_RADIO.CRADIO
+model_name: nvidia/C-RADIOv4-H

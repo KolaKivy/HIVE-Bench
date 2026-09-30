@@ -1,0 +1,3 @@
+_target_: vision_models.depthvlm.DepthVLM
+model_name: playground/Pretrained_models/DepthVLM-4B
+layer_idx: -1

@@ -1,0 +1,3 @@
+_target_: vision_models.dinov3.DinoV3
+model_name: facebook/dinov3-vitb16-pretrain-lvd1689m
+ckpt_dir: playground/Checkpoints/all_task_robotwin_dinov3_ft/final_model/pytorch_model.pt

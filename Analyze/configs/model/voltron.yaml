@@ -1,0 +1,2 @@
+_target_: vision_models.voltron_extractor.Voltron_Extractor
+model_name: v-cond-base

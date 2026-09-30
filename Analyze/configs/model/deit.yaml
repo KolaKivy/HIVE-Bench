@@ -1,0 +1,2 @@
+_target_: vision_models.deit.DeiT
+model_name: facebook/deit-base-patch16-224

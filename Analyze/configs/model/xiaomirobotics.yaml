@@ -1,0 +1,3 @@
+_target_: vision_models.xiaomirobotics.XiaomiRobotics
+model_name: playground/Pretrained_models/Xiaomi-Robotics
+layer_idx: -1

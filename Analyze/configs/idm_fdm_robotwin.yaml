@@ -1,0 +1,54 @@
+# 16-step RoboTwin IDM/FDM probe using the same frozen-encoder heads as RoboCasa.
+# The Randomized split contains 500 episodes per task; this selects exactly
+# 400 train and 100 evaluation episodes, stratified over 12 tasks.
+dataset_type: robotwin
+mode: idm
+encoder_name: dinov3
+# Full policy checkpoint; only vision_encoder.* is restored when non-null.
+finetuned_encoder_checkpoint: null
+encoder_dim: null
+head_type: transformer
+model_dim: 256
+num_layers: 4
+num_heads: 4
+dropout: 0.1
+hidden_dim: 512
+pool: mean
+
+data_root: ./playground/RoboTwin_LeRobot/Randomized
+dataset_names:
+  - adjust_bottle
+  - beat_block_hammer
+  - click_alarmclock
+  - handover_block
+  - lift_pot
+  - move_playingcard_away
+  - open_laptop
+  - place_burger_fries
+  - place_can_basket
+  - rotate_qrcode
+  - stamp_seal
+  - turn_switch
+camera_key: observation.images.cam_high
+horizon: 16
+train_episodes: 400
+val_episodes: 100
+action_dim: 14
+
+object_data_root: ./playground/RoboTwin_data
+object_train_per_task: 400
+object_val_per_task: 100
+object_num_queries: 1
+seed: 42
+
+epochs: 4
+batch_size: 256
+lr: 5.0e-4
+weight_decay: 1.0e-4
+num_workers: 4
+max_steps_per_epoch: null
+output_dir: ./playground/Checkpoints/IDM_eval_robotwin
+device: cuda
+hydra:
+  run:
+    dir: outputs/idm/${encoder_name}_${dataset_type}_h${horizon}_${head_type}

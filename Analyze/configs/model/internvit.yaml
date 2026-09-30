@@ -1,0 +1,2 @@
+_target_: vision_models.internvit.InternViT
+model_name: OpenGVLab/InternViT-300M-448px-V2_5

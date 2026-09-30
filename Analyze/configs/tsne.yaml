@@ -1,0 +1,6 @@
+stride: 10
+points_per_task: 5000
+pca_dim: 50
+perplexity: 30
+max_iter: 1000
+batch_size: 16

@@ -1,0 +1,2 @@
+_target_: vision_models.vit.ViT
+model_name: google/vit-base-patch16-224

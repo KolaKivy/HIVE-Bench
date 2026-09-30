@@ -1,0 +1,3 @@
+_target_: vision_models.SPatial_Awareness.SPA
+model_name: HaoyiZhu/SPA_base
+ckpt_dir: playground/Checkpoints/all_task_robotwin_spa_ft/final_model/pytorch_model.pt

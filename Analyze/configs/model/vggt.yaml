@@ -1,0 +1,2 @@
+_target_: vision_models.vgg_transformer.VGGTModel
+model_name: facebook/VGGT-1B-Commercial

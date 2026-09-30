@@ -1,0 +1,3 @@
+_target_: vision_models.siglip.SigLIP
+model_name: google/siglip2-base-patch16-224
+ckpt_dir: playground/Checkpoints/all_task_robotwin_siglip2-ft/final_model/pytorch_model.pt

@@ -1,0 +1,2 @@
+_target_: vision_models.siglip.SigLIP
+model_name: google/siglip2-base-patch16-224

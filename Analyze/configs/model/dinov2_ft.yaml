@@ -1,0 +1,3 @@
+_target_: vision_models.dinov2.DinoV2
+model_name: facebook/dinov2-base
+ckpt_dir: playground/Checkpoints/all_task_robotwin_dinov2_ft/final_model/pytorch_model.pt

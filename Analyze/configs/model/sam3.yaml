@@ -1,0 +1,2 @@
+_target_: vision_models.sam3.SAM3
+model_name: facebook/sam3

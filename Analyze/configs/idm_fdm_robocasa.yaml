@@ -1,0 +1,54 @@
+# 16-step RoboCasa GR1 IDM probe using HIVE-Bench DinoGR00T encoder interfaces.
+dataset_type: robocasa
+# `encoder_name` is passed directly to DinoGR00T._build_vision_encoder.
+mode: idm
+encoder_name: dinov3
+# Full policy checkpoint; only vision_encoder.* is restored when non-null.
+finetuned_encoder_checkpoint: null
+encoder_dim: null
+head_type: transformer
+model_dim: 256
+num_layers: 4
+num_heads: 4
+dropout: 0.1
+hidden_dim: 512
+pool: mean
+
+data_root: playground/Datasets/nvidia/PhysicalAI-Robotics-GR00T-X-Embodiment-Sim
+dataset_names:
+  - gr1_unified.PosttrainPnPNovelFromCuttingboardToPanSplitA_GR1ArmsAndWaistFourierHands_1000
+  - gr1_unified.PosttrainPnPNovelFromPlateToPlateSplitA_GR1ArmsAndWaistFourierHands_1000
+  - gr1_unified.PosttrainPnPNovelFromTrayToPotSplitA_GR1ArmsAndWaistFourierHands_1000
+  - gr1_unified.PosttrainPnPNovelFromTrayToPlateSplitA_GR1ArmsAndWaistFourierHands_1000
+  - gr1_unified.PosttrainPnPNovelFromPlateToCardboardboxSplitA_GR1ArmsAndWaistFourierHands_1000
+  - gr1_unified.PosttrainPnPNovelFromTrayToTieredbasketSplitA_GR1ArmsAndWaistFourierHands_1000
+  - gr1_unified.PnPBottleToCabinetClose_GR1ArmsAndWaistFourierHands_1000
+  - gr1_unified.PnPCanToDrawerClose_GR1ArmsAndWaistFourierHands_1000
+  - gr1_unified.PosttrainPnPNovelFromPlacematToBasketSplitA_GR1ArmsAndWaistFourierHands_1000
+  - gr1_unified.PosttrainPnPNovelFromCuttingboardToBasketSplitA_GR1ArmsAndWaistFourierHands_1000
+  - gr1_unified.PnPMilkToMicrowaveClose_GR1ArmsAndWaistFourierHands_1000
+  - gr1_unified.PosttrainPnPNovelFromPlacematToPlateSplitA_GR1ArmsAndWaistFourierHands_1000
+camera_key: observation.images.ego_view
+horizon: 16
+train_episodes: 1000
+val_episodes: 500
+
+# RoboTwin initial-scene object-location probe (four tasks, 400/100 per task).
+object_data_root: playground/RoboTwin_data
+object_train_per_task: 400
+object_val_per_task: 100
+object_num_queries: 1
+seed: 42
+action_dim: 29
+
+epochs: 4
+batch_size: 256
+lr: 5.0e-4
+weight_decay: 1.0e-4
+num_workers: 4
+max_steps_per_epoch: null
+output_dir: ./playground/Checkpoints/IDM_eval_16step
+device: cuda
+hydra:
+  run:
+    dir: outputs/idm/${encoder_name}_h${horizon}_${head_type}

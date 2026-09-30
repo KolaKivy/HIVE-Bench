@@ -1,0 +1,2 @@
+_target_: vision_models.theia.Theia
+model_name: theaiinstitute/theia-base-patch16-224-cdiv

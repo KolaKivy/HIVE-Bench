@@ -1,0 +1,11 @@
+# VGGT-Omega aggregator + RoboTwin fine-tuned weights (explicit `_ft` alias).
+#
+# The checkpoint stores the VGGT-Omega aggregator under `vision_encoder.aggregator.*`,
+# so it is loaded into the VGGT-Omega wrapper by run.py's suffix-matching loader.
+_target_: vision_models.vggt_omega.VGGTOmegaModel
+model_name: facebook/VGGT-Omega
+weight_file: vggt_omega_1b_512.pt
+repo_path: third_party/VGGT_Omega
+image_size: 224
+token_mode: patch
+ckpt_dir: playground/Checkpoints/all_task_robotwin_vggt_og_ft/final_model/pytorch_model.pt

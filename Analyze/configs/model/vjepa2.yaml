@@ -1,0 +1,3 @@
+_target_: vision_models.vjepa2.VJEPA2
+model_name: vjepa2_1_vit_base_384
+repo_path: third_party/VJEPA2

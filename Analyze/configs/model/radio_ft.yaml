@@ -1,0 +1,3 @@
+_target_: vision_models.C_RADIO.CRADIO
+model_name: nvidia/C-RADIOv4-H
+ckpt_dir: playground/Checkpoints/all_task_robotwin_cradio-ft/final_model/pytorch_model.pt

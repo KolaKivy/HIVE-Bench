@@ -1,0 +1,2 @@
+_target_: vision_models.lingbot.LingBot
+model_name: playground/Pretrained_models/lingbot-vision-vit-large

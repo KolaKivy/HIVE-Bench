@@ -1,0 +1,2 @@
+_target_: vision_models.da3.DA3
+model_name: depth-anything/da3nested-giant-large

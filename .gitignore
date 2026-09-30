@@ -1,0 +1,13 @@
+# Weights, datasets, videos — use playground/
+playground/
+__pycache__/
+*.pyc
+*.egg-info/
+.DS_Store
+.vscode/
+outputs/
+results/
+logs/
+checkpoints/
+MUJOCO_LOG.TXT
+cache/
