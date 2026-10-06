@@ -17,10 +17,6 @@
 
 > One policy, many visual encoders. HIVE-Bench feeds onboard cameras to a flow-matching DiT as dense patch tokens, then asks what those tokens still know about the robot. The action head, data protocol, and evaluation stay fixed, so the comparison is the representation. The policy gets no proprioception.
 
-<p align="center">
-  <img src="assets/simulation.jpg" width="100%" alt="RoboCasa-GR1 and RoboTwin 2.0.">
-</p>
-
 <div align="center">
 
 <table align="center">
@@ -62,6 +58,10 @@ Readout probes
 </table>
 
 </div>
+
+<p align="center">
+  <img src="assets/simulation.jpg" width="100%" alt="RoboCasa-GR1 and RoboTwin 2.0.">
+</p>
 
 ## Install
 
