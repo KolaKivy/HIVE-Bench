@@ -1,34 +1,26 @@
-<h1 align="center">HIVE-Bench</h1>
+<h1 align="center">HIVE-Bench: Evaluating Patch-Level Visual Representations for Egocentric Robot Manipulation</h1>
 
 <p align="center">
-Evaluating patch-level visual representations<br>for egocentric robot manipulation
+  <a href="https://huggingface.co/datasets/zhengtu666/HIVE-Bench-Data"><img src="https://img.shields.io/badge/HuggingFace-Data-orange?style=for-the-badge&logo=huggingface" alt="Data"></a>
+  <a href="https://huggingface.co/zhengtu666/HIVE-Bench/tree/main"><img src="https://img.shields.io/badge/HuggingFace-Checkpoints-blue?style=for-the-badge&logo=huggingface" alt="Checkpoints"></a>
+  <a href="Bench/Robotwin/README.md"><img src="https://img.shields.io/badge/Guide-RoboTwin-2ea44f?style=for-the-badge" alt="RoboTwin"></a>
+  <a href="Bench/Robocasa_tabletop/README.md"><img src="https://img.shields.io/badge/Guide-RoboCasa-yellow?style=for-the-badge" alt="RoboCasa"></a>
+  <a href="Analyze/README.md"><img src="https://img.shields.io/badge/Guide-Analysis-blueviolet?style=for-the-badge" alt="Analysis"></a>
 </p>
 
 <p align="center">
-  <a href="https://huggingface.co/datasets/zhengtu666/HIVE-Bench-Data"><b>Data</b></a>
-  &nbsp;&nbsp;·&nbsp;&nbsp;
-  <a href="Bench/Robotwin/README.md"><b>RoboTwin</b></a>
-  &nbsp;&nbsp;·&nbsp;&nbsp;
-  <a href="Bench/Robocasa_tabletop/README.md"><b>RoboCasa</b></a>
-  &nbsp;&nbsp;·&nbsp;&nbsp;
-  <a href="Analyze/README.md"><b>Analysis</b></a>
+  <img src="assets/teaser.png" width="100%" alt="HIVE-Bench. Twenty encoders share one patch-conditioned policy.">
 </p>
 
-<p align="center">
-  <img src="assets/teaser.png" width="100%" alt="HIVE-Bench. Twenty encoders share one patch-conditioned policy. Four diagnostic families sit underneath.">
-</p>
+> One policy, many visual encoders. HIVE-Bench feeds onboard cameras to a flow-matching DiT as dense patch tokens, then asks what those tokens still know about the robot. The action head, data protocol, and evaluation stay fixed, so the comparison is the representation. The policy gets no proprioception.
 
-<p align="center">
-<sub>20 encoders · 7 families · 24 tasks · 2 simulators · 50+ diagnostics</sub>
-</p>
+<div align="center">
 
-<br>
-
-One policy, many visual encoders. HIVE-Bench feeds onboard cameras to a flow-matching DiT as dense patch tokens, then asks what those tokens still know about the robot. The action head, data protocol, and evaluation stay fixed, so the comparison is the representation. The policy gets no proprioception.
-
-<table>
+<table align="center">
 <tr>
 <td width="33%" align="center" valign="top">
+<img src="assets/robotwin.jpg" width="100%" alt="RoboTwin 2.0 scenes.">
+<br><br>
 <a href="Bench/Robotwin/README.md"><b>RoboTwin 2.0</b></a>
 <br><br>
 Dual arm, grippers
@@ -40,6 +32,8 @@ Head and two wrists
 <sub>12 tasks · up to 500 demos</sub>
 </td>
 <td width="33%" align="center" valign="top">
+<img src="assets/robocasa.jpg" width="100%" alt="RoboCasa-GR1 scenes.">
+<br><br>
 <a href="Bench/Robocasa_tabletop/README.md"><b>RoboCasa-GR1</b></a>
 <br><br>
 Humanoid, dexterous hands
@@ -50,7 +44,7 @@ Head camera
 <br><br>
 <sub>12 tasks · up to 1,000 demos</sub>
 </td>
-<td width="33%" align="center" valign="top">
+<td width="33%" align="center" valign="middle">
 <a href="Analyze/README.md"><b>Analysis</b></a>
 <br><br>
 Token geometry
@@ -64,9 +58,7 @@ Readout probes
 </tr>
 </table>
 
-<p align="center">
-<sub>Each guide is the full path: data, training, serving, evaluation. Run commands from the repository root.</sub>
-</p>
+</div>
 
 ## Install
 
@@ -88,13 +80,17 @@ hf download zhengtu666/HIVE-Bench-Data --repo-type dataset \
   --include "RoboTwin_data/**" --local-dir playground/Datasets
 ```
 
-Weights, checkpoints, and logs are not in the repo. Qwen adapters expect `flash-attn`. Qwen3.5 needs a separate environment with `transformers>=5.2.0`.
+Released checkpoints are on [Hugging Face](https://huggingface.co/zhengtu666/HIVE-Bench/tree/main). Qwen adapters expect `flash-attn`. Qwen3.5 needs a separate environment with `transformers>=5.2.0`.
 
 ## Policy
 
-```text
-RGB  →  patch tokens  →  flow-matching DiT  →  16-step action chunk
-```
+<p align="center">
+  <img src="assets/policy.png" width="100%" alt="The shared policy. Single-task patch tokens, and multi-task tokens concatenated with a frozen text encoder, both condition a DiT action expert.">
+</p>
+
+<p align="center">
+  <em>The shared policy. (a) Single-task: patch tokens from a vision encoder or a VLM condition a DiT that denoises a 16-step action chunk. (b) Multi-task: those tokens are concatenated with a frozen text encoder.</em>
+</p>
 
 | | Vision | Language |
 | --- | --- | --- |
