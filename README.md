@@ -15,65 +15,97 @@ Evaluating patch-level visual representations<br>for egocentric robot manipulati
 </p>
 
 <p align="center">
-  <img src="assets/teaser.png" width="92%" alt="HIVE-Bench: twenty encoders, one patch-conditioned policy, and four diagnostic families.">
+  <img src="assets/teaser.png" width="100%" alt="HIVE-Bench. Twenty encoders share one patch-conditioned policy. Four diagnostic families sit underneath.">
 </p>
 
 <p align="center">
-20 encoders &nbsp;·&nbsp; 7 families &nbsp;·&nbsp; 24 tasks &nbsp;·&nbsp; 2 simulators &nbsp;·&nbsp; 50+ diagnostics
+<sub>20 encoders · 7 families · 24 tasks · 2 simulators · 50+ diagnostics</sub>
 </p>
 
-HIVE-Bench compares dense patch tokens from pretrained visual encoders on closed-loop bimanual manipulation. The same flow-matching DiT reads every encoder. Architecture, token interface, data protocol, training recipe, and simulator evaluation stay fixed inside each comparison.
+<br>
 
-Policies see onboard cameras and receive no proprioception. The study covers frozen and fine-tuned encoders, single-task and multi-task training, and sweeps over data, model size, and VLM layer.
+One policy, many visual encoders. HIVE-Bench feeds onboard cameras to a flow-matching DiT as dense patch tokens, then asks what those tokens still know about the robot. The action head, data protocol, and evaluation stay fixed, so the comparison is the representation. The policy gets no proprioception.
 
-## Findings
+<table>
+<tr>
+<td width="33%" align="center" valign="top">
+<a href="Bench/Robotwin/README.md"><b>RoboTwin 2.0</b></a>
+<br><br>
+Dual arm, grippers
+<br>
+Head and two wrists
+<br>
+14-D joint actions
+<br><br>
+<sub>12 tasks · up to 500 demos</sub>
+</td>
+<td width="33%" align="center" valign="top">
+<a href="Bench/Robocasa_tabletop/README.md"><b>RoboCasa-GR1</b></a>
+<br><br>
+Humanoid, dexterous hands
+<br>
+Head camera
+<br>
+29-D actions
+<br><br>
+<sub>12 tasks · up to 1,000 demos</sub>
+</td>
+<td width="33%" align="center" valign="top">
+<a href="Analyze/README.md"><b>Analysis</b></a>
+<br><br>
+Token geometry
+<br>
+Temporal structure
+<br>
+Readout probes
+<br><br>
+<sub>22 operators · 50+ measurements</sub>
+</td>
+</tr>
+</table>
 
-Correlations are Spearman ρ with suite success.
+<p align="center">
+<sub>Each guide is the full path: data, training, serving, evaluation. Run commands from the repository root.</sub>
+</p>
 
-| | |
-| --- | --- |
-| **32.3 → 9.9** | Mean-pooling each view drops frozen DINOv2 from 32.3% to 9.9% and DINOv3 from 31.2% to 6.4% on RoboCasa multi-task. 23 of 24 task comparisons favor the patch tokens. |
-| **ρ = −0.82** | Inverse-dynamics error tracks success on every frozen vision-encoder cohort (\|ρ\| ≥ 0.64; −0.82 on RoboTwin) and still does after the VLMs are added. State and object probes do not, once those VLMs join. |
-| **No transfer** | ImageNet, segmentation, depth, and correspondence scores do not track closed-loop success. |
-| **+26.1 pt** | All 14 frozen/fine-tuned pairs improve. On RoboTwin the gains run from 2.2 to 26.1 points; VGGT-Ω goes from 50.0% to 76.1%. Frozen rank still predicts fine-tuned rank (ρ = 0.96 on RoboTwin, 0.89 on RoboCasa). |
-| **Not monotone** | Scaling is family-specific. DINOv2 saturates after Base on RoboCasa. DINOv3 beats DINOv2 on standard vision benchmarks at matched size and trails it on both manipulation suites. |
-| **+6 to +11** | Layer 16 gains 6.0–10.7 points on the RoboCasa settings we measured, and changes RoboTwin by less than a point. VLM-derived encoders lead RoboTwin and sit mid-table on RoboCasa. |
+## Install
 
-## Protocol
+Python 3.10 or newer. We use 3.11. Simulator stacks stay in their own environments.
 
-The main comparison uses the default checkpoint of each of 20 encoders. Evaluation is 3 seeds × 50 rollouts per task. No proprioception.
+```bash
+git clone https://github.com/KolaKivy/HIVE-Bench.git
+cd HIVE-Bench
+conda create -n hivebench python=3.11 -y
+conda activate hivebench
+pip install -r requirements.txt
+pip install -e .
+```
 
-| | RoboCasa-GR1 | RoboTwin 2.0 |
+RoboTwin demonstrations:
+
+```bash
+hf download zhengtu666/HIVE-Bench-Data --repo-type dataset \
+  --include "RoboTwin_data/**" --local-dir playground/Datasets
+```
+
+Weights, checkpoints, and logs are not in the repo. Qwen adapters expect `flash-attn`. Qwen3.5 needs a separate environment with `transformers>=5.2.0`.
+
+## Policy
+
+```text
+RGB  →  patch tokens  →  flow-matching DiT  →  16-step action chunk
+```
+
+| | Vision | Language |
 | --- | --- | --- |
-| Embodiment | GR1 humanoid, dexterous hands | Dual arm, grippers |
-| Tasks | 12 | 12 |
-| Demonstrations | up to 1,000 / task | up to 500 / task |
-| Cameras | head | head + two wrists |
-| Action | 29-D | 14-D joint position |
-| Chunk | 16 predicted, 12 executed | 16 predicted, 16 executed |
-| Training | single-task and multi-task | multi-task |
-| Encoder | all 20 frozen; 7 fine-tuned | all 20 frozen; 7 fine-tuned |
+| `DinoGR00T` | a visual encoder | optional |
+| `Dinov3CLIPGR00T` | a visual encoder | frozen CLIP |
+| `QwenVisionGR00T` | selected VLM layers | frozen CLIP |
 
-Single-task trains one policy per task. Multi-task trains one language-conditioned policy on all twelve. Fine-tuning on RoboCasa is single-task; on RoboTwin it is multi-task.
-
-## Encoders
-
-| Family | Paper checkpoints |
-| --- | --- |
-| Supervised | ViT |
-| Self-supervised | MAE, DINOv2, DINOv3, V-JEPA 2.1 |
-| Geometry | SPA, VGGT-Ω, LingBot-Vision |
-| Vision–language | CLIP, SigLIP, SigLIP2, InternViT |
-| Robot | VC-1, Voltron |
-| Distillation | Theia, RADIOv2.5, C-RADIOv4 |
-| VLM-derived | Qwen3-VL, DepthVLM, Xiaomi-Robotics-1 |
-
-The release also includes other sizes, compatibility aliases, intermediate-layer extraction, and VLM adapters beyond the paper matrix.
+The paper matrix is twenty encoders: ViT, MAE, DINOv2, DINOv3, V-JEPA 2.1, SPA, VGGT-Ω, LingBot-Vision, CLIP, SigLIP, SigLIP2, InternViT, VC-1, Voltron, Theia, RADIOv2.5, C-RADIOv4, Qwen3-VL, DepthVLM, Xiaomi-Robotics-1. The release also carries other sizes and adapters.
 
 <details>
-<summary>Visual encoder names accepted by <code>DinoGR00T</code></summary>
-
-One canonical name per variant. Aliases still work.
+<summary>Encoder names</summary>
 
 | Family | Names |
 | --- | --- |
@@ -88,7 +120,7 @@ One canonical name per variant. Aliases still work.
 | V-JEPA 2.1 | `vjepa2.1_base` `vjepa2.1_large` `vjepa2.1_giant` |
 | LeVJEPA | `levjepa_videomix_large` |
 
-Also accepted: `spa_<variant>`, `vc1_base`, `vc1_large`, `distill_theia_<checkpoint>`, supported Hugging Face IDs, and DINOv2 Torch Hub names. LingBot-Vision is a visual encoder, not a VLM.
+Also accepted: `spa_<variant>`, `vc1_base`, `vc1_large`, `distill_theia_<checkpoint>`, supported Hugging Face ids, and DINOv2 Torch Hub names.
 
 </details>
 
@@ -108,89 +140,22 @@ Also accepted: `spa_<variant>`, `vc1_base`, `vc1_large`, `distill_theia_<checkpo
 | Florence-2 | `florence` |
 | Cosmos-Reason2 | `cosmos-reason2` |
 
-For probes, `qwen3`, `xiaomi`, and `depthvlm` use the default visual layer. The `_layer16` suffix reads hidden layer 16.
+`qwen3`, `xiaomi`, and `depthvlm` use the default visual layer. Append `_layer16` to read hidden layer 16.
 
 </details>
-
-## Policy
-
-```text
-RGB views  →  patch tokens  →  flow-matching DiT  →  16-step action chunk
-```
-
-| Framework | Vision | Language | Head |
-| --- | --- | --- | --- |
-| `DinoGR00T` | pluggable visual encoder | optional, from the recipe | flow-matching DiT |
-| `Dinov3CLIPGR00T` | pluggable visual encoder | frozen CLIP text | fused tokens → DiT |
-| `QwenVisionGR00T` | selected VLM layers | frozen CLIP text | projected tokens → DiT |
-
-## Diagnostics
-
-The paper reports 49–51 measurements per cohort. The runner exposes 22 operators (10 single-frame, 10 temporal, 2 sequence-level). Per-view, per-layer, spectral, and probe outputs make up the rest.
-
-| Family | Question | Examples |
-| --- | --- | --- |
-| Token statistics | How is information laid out in a frame? | anisotropy, neighbor similarity, effective rank, norm entropy |
-| Temporal | How do tokens move along a trajectory? | drift, lag-1 autocorrelation, spectral entropy, frequency bands |
-| Readouts | Can robot variables be decoded? | inverse dynamics, forward dynamics, joint state, object position |
-| Policy probes | Does the policy ignore nuisance change? | texture sensitivity, action robustness, representation shape |
-
-Associations use 100,000-shuffle permutation tests, Benjamini–Hochberg correction within each cohort, and 4,000 bootstrap resamples. Operators, dataset conventions, and launchers are in the [analysis guide](Analyze/README.md).
-
-## Install
-
-Python 3.10 or newer. 3.11 is the version we use.
-
-```bash
-git clone https://github.com/KolaKivy/HIVE-Bench.git
-cd HIVE-Bench
-
-conda create -n hivebench python=3.11 -y
-conda activate hivebench
-pip install -r requirements.txt
-pip install -e .
-```
-
-Weights, datasets, checkpoints, and logs are not in the repo. Point YAML or the shell launchers at a local checkpoint, or pass a Hugging Face model id when the adapter supports it. Code under `third_party/` is part of the release.
-
-RoboTwin and RoboCasa keep their own simulator environments, separate from `hivebench`.
-
-Qwen adapters expect FlashAttention 2:
-
-```bash
-pip install flash-attn --no-build-isolation
-```
-
-Qwen3.5 needs its own environment with `transformers>=5.2.0`. Extra adapters are integrations. They are not a claim that every model was in the paper, or that one dependency pin serves all of them.
-
-## Guides
-
-Run commands from the repository root.
-
-| [RoboTwin 2.0](Bench/Robotwin/README.md) | [RoboCasa-GR1](Bench/Robocasa_tabletop/README.md) | [Analysis](Analyze/README.md) |
-| --- | --- | --- |
-| download, convert, train, serve, evaluate | download, train, serve, evaluate | probes, token metrics, robustness, figures |
-
-RoboTwin demonstrations:
-
-```bash
-pip install -U huggingface_hub
-hf download zhengtu666/HIVE-Bench-Data --repo-type dataset \
-  --include "RoboTwin_data/**" --local-dir playground/Datasets
-```
 
 ## Layout
 
 ```text
-Policy/hivebench/     models, dataloaders, training, configs
-Policy/deployment/    policy server
-Bench/Robotwin/       RoboTwin workflow
-Bench/Robocasa_tabletop/
-Analyze/              diagnostics and probes
-third_party/          bundled research code
+Policy/hivebench/          models, data, training
+Policy/deployment/         policy server
+Bench/Robotwin/            RoboTwin workflow
+Bench/Robocasa_tabletop/   RoboCasa workflow
+Analyze/                   diagnostics
+third_party/               bundled research code
 ```
 
-A new visual encoder implements the token interface used by `DinoGR00T`. A new VLM exposes visual-token extraction through the shared adapter. A new diagnostic plugs into the analysis runner.
+A new encoder implements the token interface used by `DinoGR00T`. A new VLM exposes its visual tokens through the shared adapter. A new diagnostic plugs into the analysis runner.
 
 ## Citation
 
@@ -202,4 +167,4 @@ A new visual encoder implements the token interface used by `DinoGR00T`. A new V
 }
 ```
 
-The arXiv link will replace this note once the paper is public. License: [MIT](LICENSE). Keep the notices on bundled third-party code.
+The arXiv link will replace this note once the paper is public. [MIT](LICENSE). Keep the notices on bundled third-party code.
