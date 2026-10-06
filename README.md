@@ -1,25 +1,25 @@
+<h1 align="center">HIVE-Bench</h1>
+
 <p align="center">
-  <img src="assets/teaser.png" width="100%" alt="HIVE-Bench: twenty encoders, one patch-conditioned policy, and four diagnostic families.">
+Evaluating patch-level visual representations<br>for egocentric robot manipulation
 </p>
 
 <p align="center">
-  <a href="https://huggingface.co/datasets/zhengtu666/HIVE-Bench-Data"><img src="https://img.shields.io/badge/%F0%9F%A4%97-Data-FFD21E?style=for-the-badge&labelColor=111827" alt="Data"></a>
-  <a href="Bench/Robotwin/README.md"><img src="https://img.shields.io/badge/RoboTwin-1D4ED8?style=for-the-badge&labelColor=1D4ED8" alt="RoboTwin"></a>
-  <a href="Bench/Robocasa_tabletop/README.md"><img src="https://img.shields.io/badge/RoboCasa-C2410C?style=for-the-badge&labelColor=C2410C" alt="RoboCasa"></a>
-  <a href="Analyze/README.md"><img src="https://img.shields.io/badge/Analysis-6D28D9?style=for-the-badge&labelColor=6D28D9" alt="Analysis"></a>
-  <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-374151?style=for-the-badge&labelColor=111827" alt="MIT"></a>
+  <a href="https://huggingface.co/datasets/zhengtu666/HIVE-Bench-Data"><b>Data</b></a>
+  &nbsp;&nbsp;·&nbsp;&nbsp;
+  <a href="Bench/Robotwin/README.md"><b>RoboTwin</b></a>
+  &nbsp;&nbsp;·&nbsp;&nbsp;
+  <a href="Bench/Robocasa_tabletop/README.md"><b>RoboCasa</b></a>
+  &nbsp;&nbsp;·&nbsp;&nbsp;
+  <a href="Analyze/README.md"><b>Analysis</b></a>
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/20-encoders-1D4ED8?style=for-the-badge&labelColor=1e3a8a" alt="20 encoders">
-  <img src="https://img.shields.io/badge/7-families-0F766E?style=for-the-badge&labelColor=115e59" alt="7 families">
-  <img src="https://img.shields.io/badge/24-tasks-C2410C?style=for-the-badge&labelColor=9a3412" alt="24 tasks">
-  <img src="https://img.shields.io/badge/2-simulators-B45309?style=for-the-badge&labelColor=92400e" alt="2 simulators">
-  <img src="https://img.shields.io/badge/50+-diagnostics-6D28D9?style=for-the-badge&labelColor=5b21b6" alt="50+ diagnostics">
+  <img src="assets/teaser.png" width="92%" alt="HIVE-Bench: twenty encoders, one patch-conditioned policy, and four diagnostic families.">
 </p>
 
 <p align="center">
-  <b>Evaluating patch-level visual representations for egocentric robot manipulation</b>
+20 encoders &nbsp;·&nbsp; 7 families &nbsp;·&nbsp; 24 tasks &nbsp;·&nbsp; 2 simulators &nbsp;·&nbsp; 50+ diagnostics
 </p>
 
 HIVE-Bench compares dense patch tokens from pretrained visual encoders on closed-loop bimanual manipulation. The same flow-matching DiT reads every encoder. Architecture, token interface, data protocol, training recipe, and simulator evaluation stay fixed inside each comparison.
@@ -28,44 +28,22 @@ Policies see onboard cameras and receive no proprioception. The study covers fro
 
 ## Findings
 
-Numbers are from the paper. Correlations are Spearman ρ with suite success.
+Correlations are Spearman ρ with suite success.
 
-<table>
-<tr>
-<td width="33%" valign="top">
-<img src="https://img.shields.io/badge/Patch_tokens-32.3_%E2%86%92_9.9-BE123C?style=for-the-badge&labelColor=881337" alt="Patch tokens"><br><br>
-Mean-pooling each view drops frozen DINOv2 from <b>32.3%</b> to <b>9.9%</b> and DINOv3 from <b>31.2%</b> to <b>6.4%</b> on RoboCasa multi-task. <b>23 of 24</b> task comparisons favor the patch tokens.
-</td>
-<td width="33%" valign="top">
-<img src="https://img.shields.io/badge/IDM-rho_%3D_%2D0.82-1D4ED8?style=for-the-badge&labelColor=1e3a8a" alt="IDM"><br><br>
-Inverse-dynamics error tracks success on every frozen vision-encoder cohort (<b>|ρ| ≥ 0.64</b>; −0.82 on RoboTwin) and still does after the VLMs are added. State and object probes do not, once those VLMs join.
-</td>
-<td width="33%" valign="top">
-<img src="https://img.shields.io/badge/Vision_benchmarks-no_transfer-0F766E?style=for-the-badge&labelColor=115e59" alt="Vision benchmarks"><br><br>
-ImageNet, segmentation, depth, and correspondence scores do not track closed-loop success. A strong perception checkpoint can still drop the action-relevant signal.
-</td>
-</tr>
-<tr>
-<td width="33%" valign="top">
-<img src="https://img.shields.io/badge/Fine--tuning-%2B26.1_pt-C2410C?style=for-the-badge&labelColor=9a3412" alt="Fine-tuning"><br><br>
-All <b>14</b> frozen/fine-tuned pairs improve. On RoboTwin the gains run from 2.2 to 26.1 points; VGGT-Ω goes from <b>50.0%</b> to <b>76.1%</b>. Frozen rank still predicts fine-tuned rank (ρ = 0.96 / 0.89).
-</td>
-<td width="33%" valign="top">
-<img src="https://img.shields.io/badge/Scale-family_specific-B45309?style=for-the-badge&labelColor=92400e" alt="Scale"><br><br>
-DINOv2 saturates after Base on RoboCasa. DINOv3 beats DINOv2 on standard vision benchmarks at matched size and trails it on both manipulation suites.
-</td>
-<td width="33%" valign="top">
-<img src="https://img.shields.io/badge/Layer_16-%2B6_to_%2B11-6D28D9?style=for-the-badge&labelColor=5b21b6" alt="Layer 16"><br><br>
-Layer 16 gains 6.0–10.7 points on the RoboCasa settings we measured, and changes RoboTwin by less than a point. VLM-derived encoders lead RoboTwin and sit mid-table on RoboCasa.
-</td>
-</tr>
-</table>
+| | |
+| --- | --- |
+| **32.3 → 9.9** | Mean-pooling each view drops frozen DINOv2 from 32.3% to 9.9% and DINOv3 from 31.2% to 6.4% on RoboCasa multi-task. 23 of 24 task comparisons favor the patch tokens. |
+| **ρ = −0.82** | Inverse-dynamics error tracks success on every frozen vision-encoder cohort (\|ρ\| ≥ 0.64; −0.82 on RoboTwin) and still does after the VLMs are added. State and object probes do not, once those VLMs join. |
+| **No transfer** | ImageNet, segmentation, depth, and correspondence scores do not track closed-loop success. |
+| **+26.1 pt** | All 14 frozen/fine-tuned pairs improve. On RoboTwin the gains run from 2.2 to 26.1 points; VGGT-Ω goes from 50.0% to 76.1%. Frozen rank still predicts fine-tuned rank (ρ = 0.96 on RoboTwin, 0.89 on RoboCasa). |
+| **Not monotone** | Scaling is family-specific. DINOv2 saturates after Base on RoboCasa. DINOv3 beats DINOv2 on standard vision benchmarks at matched size and trails it on both manipulation suites. |
+| **+6 to +11** | Layer 16 gains 6.0–10.7 points on the RoboCasa settings we measured, and changes RoboTwin by less than a point. VLM-derived encoders lead RoboTwin and sit mid-table on RoboCasa. |
 
 ## Protocol
 
 The main comparison uses the default checkpoint of each of 20 encoders. Evaluation is 3 seeds × 50 rollouts per task. No proprioception.
 
-| | <img src="https://img.shields.io/badge/RoboCasa--GR1-C2410C?style=flat-square&labelColor=9a3412" alt="RoboCasa"> | <img src="https://img.shields.io/badge/RoboTwin_2.0-1D4ED8?style=flat-square&labelColor=1e3a8a" alt="RoboTwin"> |
+| | RoboCasa-GR1 | RoboTwin 2.0 |
 | --- | --- | --- |
 | Embodiment | GR1 humanoid, dexterous hands | Dual arm, grippers |
 | Tasks | 12 | 12 |
@@ -80,39 +58,20 @@ Single-task trains one policy per task. Multi-task trains one language-condition
 
 ## Encoders
 
-<p>
-<img src="https://img.shields.io/badge/Supervised-B45309?style=flat-square&labelColor=92400e" alt="Supervised">
-&nbsp; ViT
-</p>
-<p>
-<img src="https://img.shields.io/badge/Self--supervised-1D4ED8?style=flat-square&labelColor=1e3a8a" alt="Self-supervised">
-&nbsp; MAE · DINOv2 · DINOv3 · V-JEPA 2.1
-</p>
-<p>
-<img src="https://img.shields.io/badge/Geometry-BE123C?style=flat-square&labelColor=881337" alt="Geometry">
-&nbsp; SPA · VGGT-Ω · LingBot-Vision
-</p>
-<p>
-<img src="https://img.shields.io/badge/Vision--language-0F766E?style=flat-square&labelColor=115e59" alt="Vision-language">
-&nbsp; CLIP · SigLIP · SigLIP2 · InternViT
-</p>
-<p>
-<img src="https://img.shields.io/badge/Robot-C2410C?style=flat-square&labelColor=9a3412" alt="Robot">
-&nbsp; VC-1 · Voltron
-</p>
-<p>
-<img src="https://img.shields.io/badge/Distillation-1E40AF?style=flat-square&labelColor=1e3a8a" alt="Distillation">
-&nbsp; Theia · RADIOv2.5 · C-RADIOv4
-</p>
-<p>
-<img src="https://img.shields.io/badge/VLM--derived-6D28D9?style=flat-square&labelColor=5b21b6" alt="VLM-derived">
-&nbsp; Qwen3-VL · DepthVLM · Xiaomi-Robotics-1
-</p>
+| Family | Paper checkpoints |
+| --- | --- |
+| Supervised | ViT |
+| Self-supervised | MAE, DINOv2, DINOv3, V-JEPA 2.1 |
+| Geometry | SPA, VGGT-Ω, LingBot-Vision |
+| Vision–language | CLIP, SigLIP, SigLIP2, InternViT |
+| Robot | VC-1, Voltron |
+| Distillation | Theia, RADIOv2.5, C-RADIOv4 |
+| VLM-derived | Qwen3-VL, DepthVLM, Xiaomi-Robotics-1 |
 
 The release also includes other sizes, compatibility aliases, intermediate-layer extraction, and VLM adapters beyond the paper matrix.
 
 <details>
-<summary><b>Visual encoder names accepted by DinoGR00T</b></summary>
+<summary>Visual encoder names accepted by <code>DinoGR00T</code></summary>
 
 One canonical name per variant. Aliases still work.
 
@@ -134,7 +93,7 @@ Also accepted: `spa_<variant>`, `vc1_base`, `vc1_large`, `distill_theia_<checkpo
 </details>
 
 <details>
-<summary><b>VLM adapters</b></summary>
+<summary>VLM adapters</summary>
 
 | Adapter | Name match |
 | --- | --- |
@@ -155,12 +114,9 @@ For probes, `qwen3`, `xiaomi`, and `depthvlm` use the default visual layer. The 
 
 ## Policy
 
-<p align="center">
-  <img src="https://img.shields.io/badge/RGB_views-1D4ED8?style=for-the-badge&labelColor=1e3a8a" alt="RGB views">
-  <img src="https://img.shields.io/badge/%E2%86%92-patch_tokens-BE123C?style=for-the-badge&labelColor=881337" alt="patch tokens">
-  <img src="https://img.shields.io/badge/%E2%86%92-flow--matching_DiT-C2410C?style=for-the-badge&labelColor=9a3412" alt="DiT">
-  <img src="https://img.shields.io/badge/%E2%86%92-16--step_chunk-6D28D9?style=for-the-badge&labelColor=5b21b6" alt="action chunk">
-</p>
+```text
+RGB views  →  patch tokens  →  flow-matching DiT  →  16-step action chunk
+```
 
 | Framework | Vision | Language | Head |
 | --- | --- | --- | --- |
@@ -172,21 +128,16 @@ For probes, `qwen3`, `xiaomi`, and `depthvlm` use the default visual layer. The 
 
 The paper reports 49–51 measurements per cohort. The runner exposes 22 operators (10 single-frame, 10 temporal, 2 sequence-level). Per-view, per-layer, spectral, and probe outputs make up the rest.
 
-| | | |
+| Family | Question | Examples |
 | --- | --- | --- |
-| <img src="https://img.shields.io/badge/Token_statistics-1D4ED8?style=flat-square&labelColor=1e3a8a" alt="Token statistics"> | How is information laid out in a frame? | anisotropy, neighbor similarity, effective rank, norm entropy |
-| <img src="https://img.shields.io/badge/Temporal-0F766E?style=flat-square&labelColor=115e59" alt="Temporal"> | How do tokens move along a trajectory? | drift, lag-1 autocorrelation, spectral entropy, frequency bands |
-| <img src="https://img.shields.io/badge/Readouts-C2410C?style=flat-square&labelColor=9a3412" alt="Readouts"> | Can robot variables be decoded? | inverse dynamics, forward dynamics, joint state, object position |
-| <img src="https://img.shields.io/badge/Policy_probes-6D28D9?style=flat-square&labelColor=5b21b6" alt="Policy probes"> | Does the policy ignore nuisance change? | texture sensitivity, action robustness, representation shape |
+| Token statistics | How is information laid out in a frame? | anisotropy, neighbor similarity, effective rank, norm entropy |
+| Temporal | How do tokens move along a trajectory? | drift, lag-1 autocorrelation, spectral entropy, frequency bands |
+| Readouts | Can robot variables be decoded? | inverse dynamics, forward dynamics, joint state, object position |
+| Policy probes | Does the policy ignore nuisance change? | texture sensitivity, action robustness, representation shape |
 
 Associations use 100,000-shuffle permutation tests, Benjamini–Hochberg correction within each cohort, and 4,000 bootstrap resamples. Operators, dataset conventions, and launchers are in the [analysis guide](Analyze/README.md).
 
 ## Install
-
-<p>
-  <img src="https://img.shields.io/badge/Python-3.11-1D4ED8?style=flat-square&logo=python&logoColor=white&labelColor=1e3a8a" alt="Python 3.11">
-  <img src="https://img.shields.io/badge/PyTorch-EE4C2C?style=flat-square&logo=pytorch&logoColor=white&labelColor=9a3412" alt="PyTorch">
-</p>
 
 Python 3.10 or newer. 3.11 is the version we use.
 
@@ -216,22 +167,9 @@ Qwen3.5 needs its own environment with `transformers>=5.2.0`. Extra adapters are
 
 Run commands from the repository root.
 
-<table>
-<tr>
-<td width="33%" align="center" valign="top">
-<a href="Bench/Robotwin/README.md"><img src="https://img.shields.io/badge/RoboTwin_2.0-1D4ED8?style=for-the-badge&labelColor=1e3a8a" alt="RoboTwin 2.0"></a><br><br>
-download, convert, train, serve, evaluate
-</td>
-<td width="33%" align="center" valign="top">
-<a href="Bench/Robocasa_tabletop/README.md"><img src="https://img.shields.io/badge/RoboCasa--GR1-C2410C?style=for-the-badge&labelColor=9a3412" alt="RoboCasa-GR1"></a><br><br>
-download, train, serve, evaluate
-</td>
-<td width="33%" align="center" valign="top">
-<a href="Analyze/README.md"><img src="https://img.shields.io/badge/Analysis-6D28D9?style=for-the-badge&labelColor=5b21b6" alt="Analysis"></a><br><br>
-probes, token metrics, robustness, figures
-</td>
-</tr>
-</table>
+| [RoboTwin 2.0](Bench/Robotwin/README.md) | [RoboCasa-GR1](Bench/Robocasa_tabletop/README.md) | [Analysis](Analyze/README.md) |
+| --- | --- | --- |
+| download, convert, train, serve, evaluate | download, train, serve, evaluate | probes, token metrics, robustness, figures |
 
 RoboTwin demonstrations:
 
