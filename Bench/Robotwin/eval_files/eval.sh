@@ -58,6 +58,7 @@ if [[ -d "${policy_ckpt_path}" ]]; then
     fi
 fi
 [[ -f "${policy_ckpt_path}" ]] || { echo "Checkpoint does not exist: ${policy_ckpt_path}" >&2; exit 1; }
+policy_ckpt_path="$(cd "$(dirname "${policy_ckpt_path}")" && pwd)/$(basename "${policy_ckpt_path}")"
 policy_port="${7:-${ROBOTWIN_POLICY_PORT:-5694}}"
 policy_host="${8:-${ROBOTWIN_POLICY_HOST:-127.0.0.1}}"
 robotwin_python="${ROBOTWIN_PYTHON:-python}"

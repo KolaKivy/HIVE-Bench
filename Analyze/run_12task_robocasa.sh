@@ -2,9 +2,9 @@
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
 cd "${REPO_ROOT}"
-# bash run_12task_robotwin.sh <model_name> <addition_name> "0 1 2 3 4 5"
+# bash run_12task_robocasa.sh <model_name> <addition_name> "0 1 2 3 4 5"
 
-BASE_DIR="playground/RoboTwin_LeRobot_HeadCam/Randomized"
+BASE_DIR="playground/Datasets/nvidia/PhysicalAI-Robotics-GR00T-X-Embodiment-Sim"
 
 ANALYSIS="[avg_token_cos,dist_sim_decay,mean_token_norm,neighbor_sim,token_cov_rank,token_norm_entropy,token_norm_var,token_to_global,frequency_metrics,within_between_var,temporal_smoothness,temporal_cosine_shift,lag_distance_curve,temporal_variance,temporal_effective_rank,temporal_spectral_entropy,autocorrelation,total_trajectory_variation,patch_temporal_smoothness,temporal_token_norm_entropy,trajectory_var_ratio]"
 
@@ -18,27 +18,27 @@ read -r -a GPU_IDS_ARR <<< "$GPU_IDS"
 
 NUM_GPUS=${#GPU_IDS_ARR[@]}
 if [ "$#" -ne 3 ] || [ "$NUM_GPUS" -eq 0 ]; then
-    echo "Usage: bash Analyze/run_12task_robotwin.sh <model_name> <addition_name> \"<gpu_ids>\""
+    echo "Usage: bash Analyze/run_12task_robocasa.sh <model_name> <addition_name> \"<gpu_ids>\""
     exit 2
 fi
 
-LOG_DIR="./Analyze/outputs/logs/robotwin_${model}_analysis"
+LOG_DIR="./Analyze/outputs/logs/${model}_analysis"
 mkdir -p "$LOG_DIR"
 
 
 TASK_DIRS=(
-    "adjust_bottle"
-    "click_alarmclock"
-    "lift_pot"
-    "open_laptop"
-    "place_can_basket"
-    "stamp_seal"
-    "beat_block_hammer"
-    "handover_block"
-    "move_playingcard_away"
-    "place_burger_fries"
-    "rotate_qrcode"
-    "turn_switch"
+"gr1_unified.PnPBottleToCabinetClose_GR1ArmsAndWaistFourierHands_1000"
+"gr1_unified.PnPCanToDrawerClose_GR1ArmsAndWaistFourierHands_1000"
+"gr1_unified.PnPMilkToMicrowaveClose_GR1ArmsAndWaistFourierHands_1000"
+"gr1_unified.PosttrainPnPNovelFromCuttingboardToBasketSplitA_GR1ArmsAndWaistFourierHands_1000"
+"gr1_unified.PosttrainPnPNovelFromCuttingboardToPanSplitA_GR1ArmsAndWaistFourierHands_1000"
+"gr1_unified.PosttrainPnPNovelFromPlacematToBasketSplitA_GR1ArmsAndWaistFourierHands_1000"
+"gr1_unified.PosttrainPnPNovelFromPlacematToPlateSplitA_GR1ArmsAndWaistFourierHands_1000"
+"gr1_unified.PosttrainPnPNovelFromPlateToCardboardboxSplitA_GR1ArmsAndWaistFourierHands_1000"
+"gr1_unified.PosttrainPnPNovelFromPlateToPlateSplitA_GR1ArmsAndWaistFourierHands_1000"
+"gr1_unified.PosttrainPnPNovelFromTrayToPlateSplitA_GR1ArmsAndWaistFourierHands_1000"
+"gr1_unified.PosttrainPnPNovelFromTrayToPotSplitA_GR1ArmsAndWaistFourierHands_1000"
+"gr1_unified.PosttrainPnPNovelFromTrayToTieredbasketSplitA_GR1ArmsAndWaistFourierHands_1000"
 )
 
 TOTAL_TASKS=${#TASK_DIRS[@]}
@@ -60,6 +60,7 @@ cleanup() {
     echo "Cleanup complete."
     exit 0
 }
+
 trap cleanup SIGINT SIGTERM
 
 run_on_gpu() {
@@ -72,11 +73,11 @@ run_on_gpu() {
     for (( IDX=WORKER_ID; IDX<TOTAL_TASKS; IDX+=NUM_GPUS )); do
         local TASK_NAME="${TASK_DIRS[$IDX]}"
         local TASK_DIR="$BASE_DIR/$TASK_NAME"
-        local DATA_NAME="${TASK_NAME}"
-        local VIDEO_PATH="$TASK_DIR/videos/chunk-000/observation.images.cam_high/"
+        local DATA_NAME="${TASK_NAME#gr1_unified.}"
+        local VIDEO_PATH="$TASK_DIR/videos/chunk-000/observation.images.ego_view/"
 
         if [ ! -d "$VIDEO_PATH" ]; then
-            echo "[GPU $GPU_ID][WORKER $WORKER_ID] Skip IDX=$IDX task=$TASK_NAME: $VIDEO_PATH does not exist"
+            echo "[GPU $GPU_ID][WORKER $WORKER_ID] Skip IDX=$IDX task=$DATA_NAME: $VIDEO_PATH does not exist"
             continue
         fi
 
@@ -92,7 +93,7 @@ run_on_gpu() {
             model=$model \
             analysis="$ANALYSIS" \
             video_path="$VIDEO_PATH" \
-            batch_size=32 \
+            batch_size=64 \
             frame_start=0 \
             frame_end=100 \
             stride=5 \
@@ -133,4 +134,4 @@ echo "All tasks finished for model=$model."
 
 METRICS_BASE_DIR="./Analyze/outputs/${model}_${ADDITION_NAME}"
 echo "Averaging core metrics from: $METRICS_BASE_DIR"
-python Analyze/avg_core_metrics_robotwin.py "$METRICS_BASE_DIR"
+python Analyze/avg_core_metrics_robocasa.py "$METRICS_BASE_DIR"

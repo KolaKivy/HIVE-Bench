@@ -32,3 +32,6 @@ diffusers
 timm
 tyro
 websockets
+h5py
+scikit-learn
+msgpack

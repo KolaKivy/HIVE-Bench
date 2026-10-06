@@ -5,7 +5,6 @@
 <p align="center"><em>A controlled, large-scale benchmark for discovering what robot vision encoders really understand.</em></p>
 
 <p align="center">
-  <a href="iclr2027_hive_bench.pdf">📄 Paper</a> ·
   <a href="Bench/Robotwin/README.md">🤖 RoboTwin</a> ·
   <a href="Bench/Robocasa_tabletop/README.md">🏠 RoboCasa</a> ·
   <a href="Analyze/README.md">🔬 Analysis</a>
@@ -22,7 +21,7 @@ Modern robot policies do not see the world through a single pooled image vector.
 
 **HIVE-Bench closes that gap.** To our knowledge, it is the first benchmark built specifically to compare dense patch-level visual representations for egocentric bimanual manipulation under one shared policy architecture.
 
-The benchmark freezes everything that should not change—the action head, token interface, data protocol, training recipe, and simulator evaluation—and swaps only the visual representation. This turns encoder comparison from a collection of incompatible policy results into a controlled scientific experiment.
+The benchmark holds the policy architecture, token interface, data protocol, training recipe, and simulator evaluation fixed within each comparison, and swaps the visual representation. This turns encoder comparison from a collection of incompatible policy results into a controlled scientific experiment. The action head is trained; “fixed” here refers to the comparison protocol, not frozen action-head weights.
 
 | Conventional comparison | HIVE-Bench |
 | --- | --- |
@@ -106,13 +105,13 @@ Every encoder is connected to the same patch-conditioned flow-matching policy de
 egocentric RGB views
         │
         ▼
-visual encoder / VLM visual tower
+visual encoder / VLM image-position features
         │ dense patch tokens
         ▼
 projection + optional language conditioning
         │
         ▼
-16-block, width-768 flow-matching DiT
+16-block flow-matching DiT (recipe-configured width)
         │ 32 learned action queries
         ▼
 16-step continuous action chunk
@@ -185,7 +184,7 @@ The paper reports **49–51 diagnostics per benchmark cohort**, organized into f
 | Token statistics | Spatial geometry and information distribution within a frame | anisotropy, mean patch cosine, neighbor similarity, token norms, effective rank, norm entropy, within/between-frame variance |
 | Temporal diagnostics | Stability, drift, and frequency structure across trajectories | temporal drift, lag-1 autocorrelation, temporal effective rank, spectral entropy, low/mid/high-frequency energy, trajectory variation |
 | Readout probes | Whether robot-relevant variables can be decoded | IDM error, state-decoding error, object-position error, plus the release's FDM probe |
-| Policy and distribution probes | Whether learned control is robust to nuisance variation and feature shaping | texture sensitivity, action robustness, Gaussian/spherical shaping, split-half and representation-shape comparisons |
+| Policy and distribution probes | Whether learned control is robust to nuisance variation and feature shaping | texture sensitivity, action robustness, Gaussian/spherical representation shaping |
 
 The unified analysis runner exposes **22 core operators**—10 single-frame, 10 temporal, and 2 sequence-level operators. Their per-view, per-layer, spectral, lag, trajectory, and aggregate outputs combine with trainable probes and policy diagnostics to produce the paper's 50+ reported measurements. This is why the analysis suite is substantially larger than the four named IDM/FDM/State/Object probe families.
 
@@ -194,7 +193,7 @@ The unified analysis runner exposes **22 core operators**—10 single-frame, 10 
 - **Spatial/token geometry:** PCA, average token cosine, distance-similarity decay, neighbor similarity, covariance rank, norm entropy, norm variance, token-to-global similarity.
 - **Temporal dynamics:** smoothness, cosine shift, lag-distance curves, temporal variance, temporal rank, autocorrelation, spectral entropy, patch dynamics, trajectory variation.
 - **Robot readouts:** inverse dynamics, forward dynamics, proprioceptive state, and task-object position.
-- **Robustness and structure:** texture/action sensitivity, t-SNE, PCA, split-half comparison, and representation-shape analysis.
+- **Robustness and structure:** texture/action sensitivity, PCA, and Gaussian/spherical representation-shape analysis.
 - **Statistical evidence:** 100,000-shuffle permutation tests, Benjamini–Hochberg correction, and 4,000 bootstrap resamples in the paper protocol.
 
 The result is not merely a larger metric table. It is an evidence stack that connects **representation structure → decodable robot information → policy behavior → closed-loop success**.
@@ -206,7 +205,7 @@ For operators, supported models, dataset conventions, probe training, multi-GPU 
 HIVE-Bench requires Python 3.10 or newer; Python 3.11 is recommended.
 
 ```bash
-git clone <YOUR_HIVE_BENCH_REPOSITORY>
+git clone https://github.com/KolaKivy/HIVE-Bench.git
 cd HIVE-Bench
 
 conda create -n hivebench python=3.11 -y
@@ -219,6 +218,8 @@ pip install -e .
 Required research dependencies included with the release are under `third_party/` and are resolved by the code. Pretrained backbone weights, datasets, checkpoints, videos, logs, and generated outputs are intentionally excluded from the repository.
 
 Place local weights at the path selected by your YAML or shell launcher, or use a supported Hugging Face model ID when the adapter permits it. RoboTwin and RoboCasa have independent simulator dependency stacks; follow their official installation instructions and keep those environments separate from the main `hivebench` environment.
+
+Some adapters have additional model-specific requirements. The Qwen-based policy adapters use Flash Attention 2 by default: install `flash-attn` in a compatible CUDA/PyTorch environment (`pip install flash-attn --no-build-isolation`) before using those recipes. The Qwen3.5 adapter requires a separate environment with `transformers>=5.2.0`, rather than the pinned default version. Additional adapter entries are integrations, not a claim that every model was evaluated in the paper or works with the same dependency versions.
 
 ## 🧭 Start here
 
@@ -245,8 +246,7 @@ HIVE-Bench/
 │   ├── Robotwin/           # RoboTwin data, training, and evaluation workflow
 │   └── Robocasa_tabletop/  # RoboCasa data, training, and evaluation workflow
 ├── Analyze/                # 50+ diagnostics, probes, visualization, and runners
-├── third_party/            # Bundled research dependencies
-└── iclr2027_hive_bench.pdf # Accompanying paper
+└── third_party/            # Bundled research dependencies
 ```
 
 ## 🤝 Extending HIVE-Bench
@@ -257,6 +257,6 @@ Contributions, new encoder integrations, diagnostic ideas, and reproducibility r
 
 ## 📄 Paper and license
 
-Read the accompanying paper: **[HIVE-Bench: Evaluating Patch-Level Visual Representations for Egocentric Robot Manipulation](iclr2027_hive_bench.pdf)**.
+Paper: **HIVE-Bench: Evaluating Patch-Level Visual Representations for Egocentric Robot Manipulation**. The public paper link will be added when available.
 
 The public citation will be added after the double-blind review period. See [LICENSE](LICENSE) for the repository license, and retain the original notices of bundled or adapted third-party components.

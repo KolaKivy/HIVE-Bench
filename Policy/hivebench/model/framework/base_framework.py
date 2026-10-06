@@ -23,7 +23,7 @@ from transformers import AutoConfig, AutoModel, PretrainedConfig, PreTrainedMode
 import numpy as np
 from hivebench.model.tools import auto_get_trainable_modules
 
-from hivebench.model.framework.share_tools import read_mode_config
+from hivebench.model.framework.share_tools import read_mode_config, resolve_checkpoint_path
 from hivebench.training.trainer_utils import initialize_overwatch
 from hivebench.model.framework.share_tools import dict_to_namespace
 from hivebench.model.framework.__init__ import build_framework
@@ -80,7 +80,7 @@ class baseframework(PreTrainedModel):
             RuntimeError: If state_dict key mismatch occurs under strict=True.
             FileNotFoundError: If underlying files are missing (surfaced earlier).
         """
-        pretrained_checkpoint = Path(pretrained_checkpoint)
+        pretrained_checkpoint = resolve_checkpoint_path(pretrained_checkpoint)
         model_config, norm_stats = read_mode_config(pretrained_checkpoint)  # read config and norm_stats
 
         config = dict_to_namespace(model_config)

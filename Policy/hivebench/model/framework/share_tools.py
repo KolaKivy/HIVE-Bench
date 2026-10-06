@@ -200,6 +200,29 @@ def merge_pram_config(init):
     return wrapper
 
 
+def resolve_checkpoint_path(pretrained_checkpoint):
+    """Resolve a checkpoint file or a directory containing pytorch_model.pt."""
+    checkpoint = Path(pretrained_checkpoint).expanduser().resolve()
+    if checkpoint.is_dir():
+        checkpoint = checkpoint / "pytorch_model.pt"
+    if not checkpoint.is_file():
+        raise FileNotFoundError(f"Checkpoint does not exist: {checkpoint}")
+    if checkpoint.suffix not in {".pt", ".safetensors"}:
+        raise ValueError(f"Unsupported checkpoint format: {checkpoint.suffix}")
+    return checkpoint
+
+
+def _checkpoint_run_dir(checkpoint, config_name):
+    """Find metadata beside a checkpoint or in its immediate parent run."""
+    for directory in (checkpoint.parent, checkpoint.parent.parent):
+        if (directory / config_name).is_file() and (directory / "dataset_statistics.json").is_file():
+            return directory
+    raise FileNotFoundError(
+        f"Expected {config_name} and dataset_statistics.json beside {checkpoint} "
+        "or in its parent run directory."
+    )
+
+
 def read_model_config(pretrained_checkpoint):
     """
     Load global model configuration and dataset normalization statistics
@@ -222,13 +245,14 @@ def read_model_config(pretrained_checkpoint):
         FileNotFoundError: If checkpoint or required JSON files are missing.
         AssertionError: If file suffix or structure invalid.
     """
+    pretrained_checkpoint = resolve_checkpoint_path(pretrained_checkpoint)
     if os.path.isfile(pretrained_checkpoint):
         overwatch.info(f"Loading from local checkpoint path `{(checkpoint_pt := Path(pretrained_checkpoint))}`")
 
         # [Validate] Checkpoint Path should look like
         # `.../<RUN_ID>/checkpoints/<CHECKPOINT_PATH>.pt|.safetensors`
         assert checkpoint_pt.suffix in {".pt", ".safetensors"}
-        run_dir = checkpoint_pt.parents[1]
+        run_dir = _checkpoint_run_dir(checkpoint_pt, "config.json")
 
         # Get paths for `config.json`, `dataset_statistics.json` and pretrained checkpoint
         config_json, dataset_statistics_json = run_dir / "config.json", run_dir / "dataset_statistics.json"
@@ -251,7 +275,7 @@ def read_model_config(pretrained_checkpoint):
 
 def read_mode_config(pretrained_checkpoint):
     """
-    Same as read_model_config (legacy duplicate kept for backward compatibility).
+    Load YAML model configuration and normalization statistics for a checkpoint.
 
     Args:
         pretrained_checkpoint: Path to a .pt checkpoint file.
@@ -261,13 +285,14 @@ def read_mode_config(pretrained_checkpoint):
             vla_cfg (dict)
             norm_stats (dict)
     """
+    pretrained_checkpoint = resolve_checkpoint_path(pretrained_checkpoint)
     if os.path.isfile(pretrained_checkpoint):
         overwatch.info(f"Loading from local checkpoint path `{(checkpoint_pt := Path(pretrained_checkpoint))}`")
 
         # [Validate] Checkpoint Path should look like
         # `.../<RUN_ID>/checkpoints/<CHECKPOINT_PATH>.pt|.safetensors`
         assert checkpoint_pt.suffix in {".pt", ".safetensors"}
-        run_dir = checkpoint_pt.parents[1]
+        run_dir = _checkpoint_run_dir(checkpoint_pt, "config.yaml")
 
         # Get paths for `config.json`, `dataset_statistics.json` and pretrained checkpoint
         config_yaml, dataset_statistics_json = run_dir / "config.yaml", run_dir / "dataset_statistics.json"

@@ -8,7 +8,7 @@ from transformers import AutoProcessor, Qwen3VLForConditionalGeneration
 
 
 class Qwen3(torch.nn.Module):
-    'Qwen3 implementation.'
+    """Extract image-position hidden states with the full VLM backbone."""
 
     def __init__(
         self,
@@ -17,74 +17,78 @@ class Qwen3(torch.nn.Module):
         layer_idx: int = -1,
         **kwargs,
     ):
-        '  init   function.'
+        """Extract image-position hidden states with the full VLM backbone."""
         super().__init__()
         self.device = torch.device(device)
         self.processor = AutoProcessor.from_pretrained(model_name)
-        
+
         model = Qwen3VLForConditionalGeneration.from_pretrained(
             model_name,
             torch_dtype=torch.bfloat16,
             low_cpu_mem_usage=True,
         )
-        self.visual = model.model.visual
-        del model.model.language_model
-        del model.lm_head
-        self.visual.eval()
-        self.visual.to(self.device)
+        self.model = model.model
+        self.visual = self.model.visual
+        self.model.eval()
+        self.model.to(self.device)
+        self.image_token_id = int(self.model.config.image_token_id)
+        self.vision_start_token_id = int(self.model.config.vision_start_token_id)
+        self.vision_end_token_id = int(self.model.config.vision_end_token_id)
         self.layer_idx = layer_idx
 
     def forward(self, images: list[np.ndarray], requires_grad: bool = False) -> torch.Tensor:
-        'Forward function.'
-        inputs = self.processor(
-            text=["<image>"] * len(images),
-            images=images,
-            return_tensors="pt",
-        )
-        pixel_values = inputs["pixel_values"].to(self.device).type(self.visual.dtype)
-        grid_thw = inputs["image_grid_thw"].to(self.device)
+        """Extract image-position hidden states with the full VLM backbone."""
+        image_inputs = self.processor.image_processor(images=images, return_tensors="pt")
+        pixel_values = image_inputs["pixel_values"].to(self.device).type(self.visual.dtype)
+        grid_thw = image_inputs["image_grid_thw"].to(self.device)
 
-        if requires_grad:
-            vision_output = self.visual(pixel_values, grid_thw=grid_thw, return_dict=True, output_hidden_states=True)
-        else:
-            with torch.no_grad():
-                vision_output = self.visual(pixel_values, grid_thw=grid_thw, return_dict=True, output_hidden_states=True)
-        # if self.layer_idx != -1:
-        #     hidden_states = vision_output.hidden_states[self.layer_idx]
-        # else:
-        
-        hidden_states = vision_output.hidden_states[self.layer_idx]
 
-        
-        spatial_merge = self.visual.spatial_merge_size
-        visual_tokens = []
+        merge = self.visual.spatial_merge_size
+        tokens = []
+        for num in (grid_thw.prod(-1) // (merge * merge)).tolist():
+            tokens.append(self.vision_start_token_id)
+            tokens.extend([self.image_token_id] * int(num))
+            tokens.append(self.vision_end_token_id)
+        input_ids = torch.tensor([tokens], device=self.device)
+
+        context = torch.enable_grad() if requires_grad else torch.no_grad()
+        with context:
+            outputs = self.model(
+                input_ids=input_ids,
+                pixel_values=pixel_values,
+                image_grid_thw=grid_thw,
+                output_hidden_states=True,
+                return_dict=True,
+                use_cache=False,
+            )
+
+
+        hidden_states = outputs.hidden_states[self.layer_idx]
+
+        visual_tokens = hidden_states[input_ids == self.image_token_id]
+
+
+        per_image = []
         offset = 0
-        for thw in grid_thw:
-            _, h, w = thw.tolist()
-            num_patches = (h * w) // (spatial_merge * spatial_merge)
-            feats = hidden_states[offset : offset + num_patches]  # (H*W, C)
-            offset += num_patches
-            side_h, side_w = h // spatial_merge, w // spatial_merge
-            feats = feats.transpose(0, 1).reshape(1, feats.size(1), side_h, side_w)
-            visual_tokens.append(feats)
-
-        
-        max_h = max(t.size(2) for t in visual_tokens)
-        max_w = max(t.size(3) for t in visual_tokens)
-        if any(t.size(2) != max_h or t.size(3) != max_w for t in visual_tokens):
-            visual_tokens = [
-                torch.nn.functional.interpolate(
-                    t, size=(max_h, max_w), mode="bilinear", align_corners=False
-                )
-                for t in visual_tokens
+        for t, h, w in grid_thw.tolist():
+            num = (t * h * w) // (merge * merge)
+            feats = visual_tokens[offset : offset + num].transpose(0, 1)
+            offset += num
+            per_image.append(feats.reshape(1, feats.size(0), h // merge, w // merge))
+        max_h = max(feats.size(2) for feats in per_image)
+        max_w = max(feats.size(3) for feats in per_image)
+        if any(feats.size(2) != max_h or feats.size(3) != max_w for feats in per_image):
+            per_image = [
+                torch.nn.functional.interpolate(feats, size=(max_h, max_w), mode="bilinear", align_corners=False)
+                for feats in per_image
             ]
-        return torch.cat(visual_tokens, dim=0).float()
+        return torch.cat(per_image, dim=0).float()
 
 
 def print_feature_size(
     model_name: str = "playground/Pretrained_models/Qwen3-VL-4B-Instruct",
 ) -> None:
-    'Print feature size function.'
+    """Extract image-position hidden states with the full VLM backbone."""
     import requests
     from PIL import Image
 
@@ -103,7 +107,6 @@ def print_feature_size(
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-    
     qwen3_extractor = Qwen3(model_name=model_name, device=device, layer_idx=16)
     visual_tokens = qwen3_extractor.forward(images)
 

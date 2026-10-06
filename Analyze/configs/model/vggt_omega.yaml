@@ -2,7 +2,7 @@
 #
 # This is the encoder that was actually fine-tuned for the RoboTwin runs whose policy
 # config has `vision_model: vggt_omega` (see the checkpoint's own config.yaml). Use it as
-# the baseline when comparing against `vggt_ft` / `vggt_omega_ft`: the released
+# the baseline when comparing against `vggt_omega_ft`: the released
 # `vggt` config (facebook/VGGT-1B-Commercial) is a different aggregator
 # (`global_blocks`, no `attn.qkv.bias_mask`) and cannot hold those weights.
 _target_: vision_models.vggt_omega.VGGTOmegaModel

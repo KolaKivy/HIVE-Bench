@@ -26,4 +26,4 @@ num_bins: 16  # For temporal_token_norm_entropy
 
 hydra:
   run:
-    dir: outputs/${format_dir:${format_model:${model.model_name}},${addition_name}}/${data_name}
+    dir: Analyze/outputs/${format_dir:${format_model:${model.model_name}},${addition_name}}/${data_name}

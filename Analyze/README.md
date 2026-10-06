@@ -1,6 +1,6 @@
 # 🔬 HIVE-Bench Analysis
 
-This guide covers the complete analysis suite: frozen-encoder probes, representation metrics, visualization, robustness tests, execution, and output formats. Benchmark training and simulator evaluation remain in the repository root README.
+This guide covers the complete analysis suite: frozen-encoder probes, representation metrics, visualization, robustness tests, execution, and output formats. Benchmark training and simulator evaluation are documented in the [RoboTwin](../Bench/Robotwin/README.md) and [RoboCasa](../Bench/Robocasa_tabletop/README.md) guides.
 
 ## Representation probes
 
@@ -52,233 +52,88 @@ DATASET=robotwin MODE=object MODEL=qwen3_layer16 bash Analyze/run_idm.sh
 
 Each run writes its checkpoint, `training_log.csv`, `results.json`, and `data_manifest.json` under `playground/Checkpoints/`. The manifest records the selected episodes and normalization statistics for that run.
 
-## ✨ Features
+## 📊 Video representation metrics
 
-- **Multiple Analysis Methods**: Support for both single-frame and temporal analysis
-- **Hydra Configuration**: Easy configuration management with Hydra
-- **Video-based Testing**: All analyses work with video frames (no image directory support)
-- **Flexible Frame Selection**: Control frame range and stride
-- **Batch Processing**: Efficient batch processing to avoid memory issues
+The video-metric workflow supports single-frame statistics, temporal statistics, and multi-video metrics. The updated `run.py` delegates checkpoint loading, video decoding, metric execution, and summary writing to the modules under [tools/](tools/).
 
-## 🛠️ Installation
+### Run the 12-task batch
+
+Run from the HIVE-Bench repository root:
 
 ```bash
-pip install hydra-core opencv-python torch transformers numpy matplotlib scikit-learn pillow
+bash Analyze/run_12task_robocasa.sh dinov3 robocasa_video_level "0 1"
+bash Analyze/run_12task_robotwin.sh dinov3 robotwin_video_level "0 1"
 ```
 
-## 🚀 Usage
+| Argument | Meaning |
+|---|---|
+| `model_name` | Configuration name under `Analyze/configs/model/`, such as `dinov3`, `dinov2`, `clip`, `siglip`, `qwen3`, or `xiaomirobotics_layer16` |
+| `addition_name` | Run label used in the output directory, such as `video_level` |
+| `gpu_ids` | Quoted, space-separated CUDA IDs; one worker runs per listed GPU |
 
-### Basic Command Structure
+Tasks are assigned round-robin by worker index, so nonconsecutive GPU IDs are supported. The RoboCasa script reads `observation.images.ego_view` videos; the RoboTwin script reads `observation.images.cam_high` videos from the converted head-camera LeRobot dataset.
+
+Edit `BASE_DIR` in each script for your dataset location and `TASK_DIRS` for the tasks to analyze. The defaults select 12 tasks, stride 5, and batch sizes of 64 (RoboCasa) or 32 (RoboTwin). Directory mode samples every fifth video in sorted order and processes its full duration at the selected frame stride; the launchers' `frame_start` and `frame_end` settings apply only to individual-file runs. Change `ANALYSIS` to choose the desired metrics.
+
+### Metric coverage
+
+| Group | Included analysis identifiers |
+|---|---|
+| Single-frame | `avg_token_cos`, `dist_sim_decay`, `mean_token_norm`, `neighbor_sim`, `token_cov_rank`, `token_norm_entropy`, `token_norm_var`, `token_to_global`, `frequency_metrics`, `within_between_var` |
+| Temporal | `temporal_smoothness`, `temporal_cosine_shift`, `lag_distance_curve`, `temporal_variance`, `temporal_effective_rank`, `temporal_spectral_entropy`, `autocorrelation`, `total_trajectory_variation`, `patch_temporal_smoothness`, `temporal_token_norm_entropy` |
+| Multi-video | `trajectory_var_ratio` |
+
+The default batch selects 21 analysis methods. Their JSON summaries contain multiple measurements, including frequency-band energy, entropy, centroid, and bandwidth; analysis-method counts and scalar-metric counts are therefore different.
+
+Qwen3-VL, DepthVLM, and Xiaomi Robotics-1 now extract image-position features through the full VLM backbone rather than only the visual tower. Layer selection is configured with `layer_idx` in the model YAML; `qwen3_layer16` and `xiaomirobotics_layer16` have dedicated configurations. LingBot remains a visual encoder.
+
+### Outputs and automatic task averaging
+
+Each task writes its averaged video summary to:
+
+```text
+Analyze/outputs/<model>_<addition_name>/<data_name>/all_videos_summary.json
+```
+
+For RoboCasa, `data_name` omits the `gr1_unified.` prefix; for RoboTwin, it is the task name. Depending on the selected methods, the directory also contains PNG visualizations and additional JSON summaries. Console logs are under `Analyze/outputs/logs/`.
+
+After the workers finish, each batch script automatically calls its corresponding `avg_core_metrics_*.py` helper and writes:
+
+```text
+Analyze/outputs/<model>_<addition_name>/avg_core_metrics.json
+```
+
+The final file records contributing tasks, averaged scalar metrics, and metrics grouped by analysis. Missing task files or metric fields are reported and skipped; a run with no valid metrics fails. Curve-only results from `dist_sim_decay` and `lag_distance_curve` remain in per-task outputs and are excluded from the scalar average. The helpers also compute eight derived frequency measurements, including high/low energy ratio and normalized entropy.
+
+To rerun aggregation independently:
 
 ```bash
-python run.py model=<model_name> analysis=<analysis_method> video_path=<path_to_video> [options]
+python Analyze/avg_core_metrics_robocasa.py Analyze/outputs/dinov3_robocasa_video_level
+python Analyze/avg_core_metrics_robotwin.py Analyze/outputs/dinov3_robotwin_video_level
 ```
 
-### Available Models
+Use separate run labels when analyzing both datasets with the same model. If you change the task selection in a batch script, also update `TASK_DIRS` in its averaging helper.
 
-- `dinov3` - DINOv3 (facebook/dinov3-vits16-pretrain-lvd1689m)
-- `clip` - CLIP (openai/clip-vit-large-patch14)
-- `sam` - Segment Anything Model
-- `dinov2` - DINOv2
-- `siglip` - SigLIP
-- `vit` - Vision Transformer
-- And more (see `configs/model/`)
-
-### Single-Frame Analysis Methods
-
-These methods analyze each frame independently and output averaged metrics:
+### Manual single-task or single-video run
 
 ```bash
-# PCA visualization (only saves first frame)
-python run.py model=dinov3 analysis=pca_vis video_path=playground/videos/example.mp4
-
-# Average pairwise token cosine similarity
-python run.py model=clip analysis=avg_token_cos video_path=playground/videos/example.mp4
-
-# Distance-similarity decay curve
-python run.py model=dinov3 analysis=dist_sim_decay video_path=playground/videos/example.mp4
-
-# Mean token norm
-python run.py model=sam analysis=mean_token_norm video_path=playground/videos/example.mp4
-
-# Neighbor similarity
-python run.py model=dinov3 analysis=neighbor_sim video_path=playground/videos/example.mp4
-
-# Token covariance rank (effective rank)
-python run.py model=clip analysis=token_cov_rank video_path=playground/videos/example.mp4
-
-# Token norm entropy
-python run.py model=dinov3 analysis=token_norm_entropy video_path=playground/videos/example.mp4
-
-# Token norm variance
-python run.py model=dinov3 analysis=token_norm_var video_path=playground/videos/example.mp4
-
-# Token-to-global similarity
-python run.py model=siglip analysis=token_to_global video_path=playground/videos/example.mp4
+python Analyze/run.py \
+  model=dinov3 \
+  analysis=avg_token_cos \
+  video_path=playground/videos/example.mp4 \
+  addition_name=debug \
+  data_name=example
 ```
 
-### Temporal Analysis Methods
+`video_path` accepts a video file or a directory of videos. Optional controls include `frame_start`, `frame_end`, `stride`, `batch_size`, and `device=cpu`. Frame indices are zero-based; temporal analyses require at least two sampled frames.
 
-These methods require multiple frames and analyze temporal dynamics:
+## 🔮 Gaussian / sphere representation analysis
 
-```bash
-# Temporal smoothness
-python run.py model=dinov3 analysis=temporal_smoothness video_path=playground/videos/example.mp4
-
-# Temporal cosine shift
-python run.py model=clip analysis=temporal_cosine_shift video_path=playground/videos/example.mp4
-
-# Lag-distance curve
-python run.py model=dinov3 analysis=lag_distance_curve video_path=playground/videos/example.mp4
-
-# Temporal variance
-python run.py model=dinov3 analysis=temporal_variance video_path=playground/videos/example.mp4
-
-# Temporal effective rank
-python run.py model=dinov3 analysis=temporal_effective_rank video_path=playground/videos/example.mp4
-
-# Temporal spectral entropy
-python run.py model=dinov3 analysis=temporal_spectral_entropy video_path=playground/videos/example.mp4
-
-# Autocorrelation
-python run.py model=dinov3 analysis=autocorrelation video_path=playground/videos/example.mp4
-
-# Total trajectory variation
-python run.py model=clip analysis=total_trajectory_variation video_path=playground/videos/example.mp4
-
-# Patch temporal smoothness
-python run.py model=dinov3 analysis=patch_temporal_smoothness video_path=playground/videos/example.mp4
-
-# Temporal token norm entropy
-python run.py model=dinov3 analysis=temporal_token_norm_entropy video_path=playground/videos/example.mp4 num_bins=20
-```
-
-### Advanced Options
-
-```bash
-# Specify frame range
-python run.py model=dinov3 analysis=temporal_smoothness video_path=playground/videos/example.mp4 frame_start=0 frame_end=100
-
-# Use stride to sample frames
-python run.py model=dinov3 analysis=temporal_variance video_path=playground/videos/example.mp4 stride=5
-
-# Custom batch size (to manage memory)
-python run.py model=dinov3 analysis=avg_token_cos video_path=playground/videos/example.mp4 batch_size=4
-
-# Custom output directory
-python run.py model=dinov3 analysis=pca_vis video_path=playground/videos/example.mp4 output_dir=./my_results
-
-# Run on CPU
-python run.py model=dinov3 analysis=temporal_smoothness video_path=playground/videos/example.mp4 device=cpu
-```
-
-## 📂 Output Structure
-
-Results are saved in `output_dir/{model_name}_{analysis_name}/`:
-
-### Single-Frame Analysis
-```
-output/dinov3_avg_token_cos/
-├── frame_0000/
-│   ├── reference.png
-│   ├── avg_token_cos.png
-│   └── summary.json
-├── frame_0001/
-│   ├── reference.png
-│   ├── avg_token_cos.png
-│   └── summary.json
-├── ...
-└── averaged_summary.json  # Averaged metrics across all frames
-```
-
-### Temporal Analysis
-```
-output/dinov3_temporal_smoothness/
-├── temporal_smoothness.png  # Visualization
-└── summary.json             # Detailed metrics
-```
-
-### PCA Visualization (Special Case)
-```
-output/dinov3_pca_vis/
-├── frame_0000/
-│   ├── reference.png
-│   └── pca_vis.png          # Only first frame has PCA visualization
-├── frame_0001/              # Other frames exist but no PCA
-├── ...
-└── averaged_summary.json
-```
-
-## ⚙️ Configuration
-
-Edit `configs/config.yaml` for default settings:
-
-```yaml
-device: cuda
-batch_size: 8
-output_dir: ./output
-video_path: null
-frame_start: null
-frame_end: null
-stride: 1
-analysis: null
-num_bins: 16  # For temporal_token_norm_entropy
-```
-
-Select different models in `configs/model/*.yaml`.
-
-## 🧩 Adding New Analysis Methods
-
-1. Create a new Python file in `analyse/` directory
-2. Implement the analysis functions following existing patterns
-3. Import the module in `run.py`
-4. Add the method name to either `single_frame_methods` or `temporal_methods` list
-
-## 🎯 Key Design Principles
-
-1. **Video-only input**: All analyses use frames extracted from videos
-2. **Single method execution**: Each run executes only one analysis method
-3. **PCA restriction**: PCA visualization only saves the initial frame
-4. **Averaged metrics**: Single-frame methods output averaged metrics across all frames
-5. **Hydra-based configuration**: Clean and flexible configuration management
-
-## 💡 Examples
-
-### Example 1: Compare different encoders on temporal smoothness
-```bash
-python run.py model=dinov3 analysis=temporal_smoothness video_path=test.mp4
-python run.py model=clip analysis=temporal_smoothness video_path=test.mp4
-python run.py model=sam analysis=temporal_smoothness video_path=test.mp4
-```
-
-### Example 2: Analyze specific time window
-```bash
-python run.py model=dinov3 analysis=autocorrelation video_path=test.mp4 frame_start=50 frame_end=150
-```
-
-### Example 3: Reduce memory usage for large videos
-```bash
-python run.py model=dinov3 analysis=dist_sim_decay video_path=long_video.mp4 batch_size=4 stride=2
-```
-
-## 📝 Notes
-
-- All frame indices are 0-based
-- If `frame_start` and `frame_end` are not specified, all frames are used
-- Temporal analyses require at least 2 frames
-- Batch processing helps manage GPU memory for large videos
-- Results include both visualizations (PNG) and numerical summaries (JSON)
-
-
-## Analysis layout and released workflows
-
-The released analysis entrypoints live in `Analyze/analyse/`. Use [run_idm.sh](run_idm.sh) for the representation probes, [action_robustness.py](analyse/action_robustness.py) for static-texture robustness, and [run_representation_shape.sh](run_representation_shape.sh) for Gaussian and sphere representation-shape analysis.
-
-The Gaussian/sphere representation-shape workflow is included in this open-source release.
+The Gaussian/sphere workflow is included in this release.
 
 ### Representation shape (Gaussian / sphere)
 
-The implementation is in `analyse/representation_shape.py`. It uses the head-camera Robotwin LeRobot dataset and the RoboCasa PhysicalAI dataset, samples every 10 frames, and uses all episodes (500 Robotwin / 1000 RoboCasa per task) and samples every 10th frame; `POINTS_PER_TASK` can cap samples for smoke tests. Each view is pooled to 14x14 tokens and projected with a fixed JL matrix to 256D. Run one dataset at a time:
+The implementation is in `analyse/representation_shape.py`. It uses the head-camera RoboTwin LeRobot dataset and the RoboCasa PhysicalAI dataset. Candidate videos come from up to 500 RoboTwin or 1,000 RoboCasa episodes per task, with a default frame stride of 10. The launcher caps sampled frames per task at 2,000 for RoboTwin and 500 for RoboCasa; set `POINTS_PER_TASK=0` to use all candidate frames, or a smaller positive value for a smoke test. Set `STRIDE` to change the sampling interval. Each view is pooled to 14x14 tokens and projected with a fixed JL matrix to 256D. Run one dataset at a time:
 
 ```bash
 DATASET=robotwin bash Analyze/run_representation_shape.sh
