@@ -1,15 +1,19 @@
+run_id: dinov3_clip_groot_robotwin
+run_root_dir: playground/Checkpoints
 seed: 42
 trackers: [jsonl]
 is_debug: false
-
 framework:
-  name: DinoGR00T
-  vision_model: dinov2
-
+  name: VisionCLIPGR00T
+  # Uses the same encoder factory as VisionGR00T. Replace with any supported
+  # VisionGR00T encoder shorthand (for example: dinov2, siglip, internvit).
+  vision_model: levjepa
+  # This remains the auxiliary language encoder, independent of vision_model.
+  clip_model: openai/clip-vit-base-patch32
   action_model:
     action_model_type: DiT-B
-    hidden_size: 768               # DinoGR00T overrides this value to match vision_dim.
-    add_pos_embed: True
+    hidden_size: 768
+    add_pos_embed: true
     max_seq_len: 1024
     action_dim: 14
     state_dim: 14
@@ -24,14 +28,13 @@ framework:
     num_inference_timesteps: 10
     num_target_vision_tokens: 32
     diffusion_model_cfg:
-      cross_attention_dim: 768     # DinoGR00T overrides this value.
+      cross_attention_dim: 768
       dropout: 0.2
       final_dropout: true
       interleave_self_attention: true
-      norm_type: "ada_norm"
+      norm_type: ada_norm
       num_layers: 16
       positional_embeddings: null
-
 datasets:
   vla_data:
     dataset_py: lerobot_datasets
@@ -39,30 +42,34 @@ datasets:
     data_mix: robotwin_all
     action_type: abs_qpos
     action_mode: abs
-    sequential_step_sampling: False
+    sequential_step_sampling: false
     default_image_resolution: [3, 224, 224]
     per_device_batch_size: 32
     load_all_data_for_training: true
+    # AgilexDataConfig order: high camera, left wrist, right wrist.
     obs: ["image_0", "image_1", "image_2"]
     image_size: [224, 224]
     video_backend: pyav
     delete_pause_frame: false
     max_trajectories: 500
     trajectory_subset_seed: 42
-
 trainer:
   epochs: 100
-  max_train_steps: 40000
+  max_train_steps: 100000
   num_warmup_steps: 5000
-  save_interval: 20000
+  save_interval: 100000
   eval_interval: 999999
   learning_rate:
-    base: 1e-04
+    base: 1.0e-04
+    text_projector: 1.0e-04
     action_model: 1.0e-04
   lr_scheduler_type: cosine_with_min_lr
   scheduler_specific_kwargs:
     min_lr: 5.0e-07
-  freeze_modules: 'vision_encoder'
+  # Keep CLIP text features and the selected vision backbone frozen.
+  freeze_modules: text_encoder,vision_encoder
+  loss_scale:
+    vla: 1.0
   max_grad_norm: 1.0
   warmup_ratio: 0.1
   weight_decay: 0.0

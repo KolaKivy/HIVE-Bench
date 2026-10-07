@@ -8,6 +8,7 @@ Each framework module registers its constructor with FRAMEWORK_REGISTRY.
 
 import pkgutil
 import importlib
+from ._framework_names import normalize_framework_config
 from hivebench.model.tools import FRAMEWORK_REGISTRY
 
 from hivebench.training.trainer_utils import initialize_overwatch
@@ -40,6 +41,7 @@ def build_framework(cfg):
     if not hasattr(cfg.framework, "name"):
         raise ValueError("Configuration must define framework.name")
 
+    normalize_framework_config(cfg)
     framework_id = cfg.framework.name
     if framework_id not in FRAMEWORK_REGISTRY._registry:
         raise NotImplementedError(f"Framework {cfg.framework.name} is not implemented. Available frameworks are registered from Policy/hivebench/model/framework.")

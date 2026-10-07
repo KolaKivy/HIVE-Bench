@@ -43,7 +43,7 @@ def video_files(task_dir, camera, limit):
 
 def build_encoder(name, device, checkpoint=None):
     sys.path.insert(0, str(ROOT / "Policy"))
-    from hivebench.model.framework.DinoGR00T import _build_vision_encoder
+    from hivebench.model.framework.VisionGR00T import _build_vision_encoder
     model = _build_vision_encoder(name).eval().to(device)
     if checkpoint:
         from Analyze.analyse.idm_fdm_model import load_finetuned_vision_encoder

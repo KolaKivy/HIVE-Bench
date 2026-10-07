@@ -63,13 +63,13 @@ class VLMTokenBackbone(nn.Module):
 
 # Encoder factory.
 def build_encoder(vision_model_name: str, vlm_layer_idx: int = -1) -> nn.Module:
-    """Build through HIVE-Bench's shared DinoGR00T encoder factory."""
-    policy_root = Path(__file__).resolve().parents[1] / "Policy"
+    """Build through HIVE-Bench's shared VisionGR00T encoder factory."""
+    policy_root = Path(__file__).resolve().parents[2] / "Policy"
     if str(policy_root) not in sys.path:
         sys.path.insert(0, str(policy_root))
     raw_name = str(vision_model_name).strip().lower()
     # qwen3_layer16 (or *_l16) selects the same intermediate layer as
-    # framework.vision_text_fusion.vlm_layer_idx=16 in QwenVisionGR00T.
+    # framework.vision_text_fusion.vlm_layer_idx=16 in VLMVisionGR00T.
     layer_idx = int(vlm_layer_idx)
     for suffix in ("_layer16", "_l16"):
         if raw_name.endswith(suffix):
@@ -79,7 +79,7 @@ def build_encoder(vision_model_name: str, vlm_layer_idx: int = -1) -> nn.Module:
             break
     if raw_name in {"depthvlm", "qwen3", "xiaomi"}:
         return VLMTokenBackbone(raw_name, layer_idx=layer_idx)
-    from hivebench.model.framework.DinoGR00T import _build_vision_encoder
+    from hivebench.model.framework.VisionGR00T import _build_vision_encoder
     return _build_vision_encoder(raw_name)
 
 

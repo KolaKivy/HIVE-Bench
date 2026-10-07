@@ -1,4 +1,4 @@
-# DinoGR00T.py — Pure-vision GR00T framework with pluggable vision encoders
+# VisionGR00T.py — Pure-vision GR00T framework with pluggable vision encoders
 
 
 
@@ -56,7 +56,7 @@ from hivebench.model.tools import FRAMEWORK_REGISTRY
 
 def _build_vision_encoder(vision_model_name: str) -> nn.Module:
     ' build vision encoder function.'
-    from hivebench.model.modules.dino_model import hf_encoder as hfe
+    from hivebench.model.modules.vison_model import hf_encoder as hfe
 
     name = vision_model_name.lower()
 
@@ -158,7 +158,7 @@ def _build_vision_encoder(vision_model_name: str) -> nn.Module:
 
     # Resolve torch.hub DINOv2 identifiers.
     if "/" not in vision_model_name:
-        from hivebench.model.modules.dino_model.dino import get_dino_model
+        from hivebench.model.modules.vison_model.dino import get_dino_model
         return get_dino_model(vision_model_name)
 
     if name == "galilai-group/levjepa-videomix-large":
@@ -175,9 +175,9 @@ def _build_vision_encoder(vision_model_name: str) -> nn.Module:
     return hfe.HFViTBackbone(vision_model_name)
 
 
-@FRAMEWORK_REGISTRY.register("DinoGR00T")
-class DinoGR00T(baseframework):
-    'DinoGR00T implementation.'
+@FRAMEWORK_REGISTRY.register("VisionGR00T")
+class VisionGR00T(baseframework):
+    'VisionGR00T implementation.'
 
     def __init__(self, config) -> None:
         super().__init__()
@@ -189,7 +189,7 @@ class DinoGR00T(baseframework):
         
         self.vision_encoder = _build_vision_encoder(vision_model_name)
         self.vision_dim = self.vision_encoder.num_channels
-        print(f"[DinoGR00T] vision_encoder={vision_model_name}, vision_dim={self.vision_dim}")
+        print(f"[VisionGR00T] vision_encoder={vision_model_name}, vision_dim={self.vision_dim}")
 
         
         for param in self.vision_encoder.parameters():

@@ -270,7 +270,9 @@ def read_model_config(pretrained_checkpoint):
     else:
         overwatch.error(f" Pretrained checkpoint `{pretrained_checkpoint}` does not exist.")
         raise FileNotFoundError(f"Pretrained checkpoint `{pretrained_checkpoint}` does not exist.")
-    return global_cfg, norm_stats
+    from ._framework_names import normalize_framework_config
+
+    return normalize_framework_config(global_cfg), norm_stats
 
 
 def read_mode_config(pretrained_checkpoint):
@@ -314,4 +316,6 @@ def read_mode_config(pretrained_checkpoint):
     else:
         overwatch.error(f" Pretrained checkpoint `{pretrained_checkpoint}` does not exist.")
         raise FileNotFoundError(f"Pretrained checkpoint `{pretrained_checkpoint}` does not exist.")
-    return global_cfg, norm_stats
+    from ._framework_names import normalize_framework_config
+
+    return normalize_framework_config(global_cfg), norm_stats

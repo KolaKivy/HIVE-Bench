@@ -98,12 +98,20 @@ The RoboTwin YAML files use the `robotwin_all` dataset mixture defined in [`mixt
 - **Multi-task training:** leave all and only the tasks you want active; comment out the rest or remove them from the list.
 - Use the `Randomized/` prefix for converted `demo_randomized` data and `Clean/` for converted `demo_clean` data. The selected directory must exist under the YAML's `data_root_dir`.
 
-The same `robotwin_all` mixture is used by the three released RoboTwin training configurations. Changing it therefore changes the training task set for `DinoGR00T`, `Dinov3CLIPGR00T`, and `QwenVisionGR00T`. Use a new `run_id` for every task selection. Evaluation tasks are selected separately with `eval_12_tasks.sh --tasks` or the first argument to `eval.sh`.
+The same `robotwin_all` mixture is used by the three released RoboTwin training configurations. Changing it therefore changes the training task set for `VisionGR00T`, `VisionCLIPGR00T`, and `VLMVisionGR00T`. Use a new `run_id` for every task selection. Evaluation tasks are selected separately with `eval_12_tasks.sh --tasks` or the first argument to `eval.sh`.
 
-### Pure visual encoder: `DinoGR00T`
+The three training entrypoints and their matching YAML files are:
+
+| Framework | Launcher (`train_files/`) | Configuration (`train_files/`) |
+| --- | --- | --- |
+| `VisionGR00T` | [run_vision_robotwin_train.sh](train_files/run_vision_robotwin_train.sh) | [vision_robotwin.yaml](train_files/vision_robotwin.yaml) |
+| `VisionCLIPGR00T` | [run_vision_clip_robotwin.sh](train_files/run_vision_clip_robotwin.sh) | [vision_clip_robotwin.yaml](train_files/vision_clip_robotwin.yaml) |
+| `VLMVisionGR00T` | [run_vlm_robotwin.sh](train_files/run_vlm_robotwin.sh) | [vlm_robotwin.yaml](train_files/vlm_robotwin.yaml) |
+
+### Pure visual encoder: `VisionGR00T`
 
 ```bash
-bash Bench/Robotwin/train_files/run_dino_robotwin_train.sh
+bash Bench/Robotwin/train_files/run_vision_robotwin_train.sh
 ```
 
 Choose another visual encoder and a deterministic data subset:
@@ -112,33 +120,33 @@ Choose another visual encoder and a deterministic data subset:
 VISION_MODEL=dinov3_base \
 NUM_TRAJECTORIES=100 \
 TRAJECTORY_SUBSET_SEED=42 \
-bash Bench/Robotwin/train_files/run_dino_robotwin_train.sh
+bash Bench/Robotwin/train_files/run_vision_robotwin_train.sh
 ```
 
 The first positional argument also overrides the trajectory count:
 
 ```bash
-bash Bench/Robotwin/train_files/run_dino_robotwin_train.sh 100
+bash Bench/Robotwin/train_files/run_vision_robotwin_train.sh 100
 ```
 
-### Visual encoder + CLIP text: `Dinov3CLIPGR00T`
+### Visual encoder + CLIP text: `VisionCLIPGR00T`
 
 ```bash
-bash Bench/Robotwin/train_files/run_dinov3_clip_robotwin.sh
+bash Bench/Robotwin/train_files/run_vision_clip_robotwin.sh
 ```
 
 ```bash
 VISION_MODEL=vjepa2.1_base \
 NUM_TRAJECTORIES=100 \
 TRAJECTORY_SUBSET_SEED=42 \
-bash Bench/Robotwin/train_files/run_dinov3_clip_robotwin.sh
+bash Bench/Robotwin/train_files/run_vision_clip_robotwin.sh
 ```
 
-### VLM visual tokens + CLIP text: `QwenVisionGR00T`
+### VLM visual tokens + CLIP text: `VLMVisionGR00T`
 
 ```bash
 BASE_VLM=playground/Pretrained_models/Qwen3-VL-4B-Instruct \
-bash Bench/Robotwin/train_files/run_qwenvision_robotwin.sh
+bash Bench/Robotwin/train_files/run_vlm_robotwin.sh
 ```
 
 To train with VLM layer 16, add this line to the `accelerate launch` arguments in the shell launcher:
@@ -153,16 +161,16 @@ The released RoboTwin VLM launcher already includes this line. Change `16` to an
 
 | Variable / setting | Used by | Meaning |
 | --- | --- | --- |
-| `VISION_MODEL` | DinoGR00T, Dinov3CLIPGR00T | Encoder shorthand or supported model ID. |
-| `BASE_VLM` | QwenVisionGR00T | Local VLM directory or supported model ID. |
+| `VISION_MODEL` | VisionGR00T, VisionCLIPGR00T | Encoder shorthand or supported model ID. |
+| `BASE_VLM` | VLMVisionGR00T | Local VLM directory or supported model ID. |
 | `NUM_TRAJECTORIES` | Supported launchers | Maximum trajectories selected from each configured task. A positional count takes priority where supported. |
 | `TRAJECTORY_SUBSET_SEED` | Supported launchers | Seed for deterministic trajectory selection. |
-| `RUN_ROOT_DIR` | QwenVisionGR00T launcher | Checkpoint/output root. Other launchers currently define this in the shell script. |
+| `RUN_ROOT_DIR` | VLMVisionGR00T launcher | Checkpoint/output root. Other launchers currently define this in the shell script. |
 | `data_root_dir` | Training YAML | Converted dataset root. Edit the selected YAML if your dataset is elsewhere. |
 | `run_id` | Shell launcher or YAML | Experiment directory name. Set a unique value for each run. |
 | `CUDA_VISIBLE_DEVICES` | Shell launcher | Training GPUs. Keep it consistent with Accelerate `--num_processes`. |
 
-The complete encoder alias catalog is in the [root README](../../README.md#visual-encoder-support).
+The complete encoder alias catalog is in the [root README](../../README.md#policy).
 
 ## 🧰 4. Install RoboTwin
 

@@ -56,12 +56,20 @@ The provided RoboCasa recipes use the `fourier_gr1_unified_1` dataset mixture de
 - **Single-task training:** keep only the tuple for the task you want to train.
 - **Multi-task training:** keep all and only the task tuples you want in the mixture.
 
-Do not change the sampling weight or robot type unless you are intentionally designing a new mixture. The dataset name must match a directory under the configured `data_root_dir`. All three RoboCasa launchers select this same mixture, so editing it changes the task set for `DinoGR00T`, `Dinov3CLIPGR00T`, and `QwenVisionGR00T`. Give each task selection a new `run_id` so checkpoints are not mixed between experiments.
+Do not change the sampling weight or robot type unless you are intentionally designing a new mixture. The dataset name must match a directory under the configured `data_root_dir`. All three RoboCasa launchers select this same mixture, so editing it changes the task set for `VisionGR00T`, `VisionCLIPGR00T`, and `VLMVisionGR00T`. Give each task selection a new `run_id` so checkpoints are not mixed between experiments.
 
-### Pure visual encoder: `DinoGR00T`
+The three training entrypoints and their matching YAML files are:
+
+| Framework | Launcher (`train_files/`) | Configuration (`train_files/`) |
+| --- | --- | --- |
+| `VisionGR00T` | [run_vision_robocasa.sh](train_files/run_vision_robocasa.sh) | [vision_robocasa.yaml](train_files/vision_robocasa.yaml) |
+| `VisionCLIPGR00T` | [run_vision_clip_robocasa.sh](train_files/run_vision_clip_robocasa.sh) | [vision_clip_robocasa.yaml](train_files/vision_clip_robocasa.yaml) |
+| `VLMVisionGR00T` | [run_vlm_robocasa.sh](train_files/run_vlm_robocasa.sh) | [vlm_robocasa.yaml](train_files/vlm_robocasa.yaml) |
+
+### Pure visual encoder: `VisionGR00T`
 
 ```bash
-bash Bench/Robocasa_tabletop/train_files/run_dino_robocasa.sh
+bash Bench/Robocasa_tabletop/train_files/run_vision_robocasa.sh
 ```
 
 Select a visual encoder and deterministic trajectory subset:
@@ -72,19 +80,19 @@ DATA_ROOT_DIR=playground/Datasets/nvidia/PhysicalAI-Robotics-GR00T-X-Embodiment-
 NUM_TRAJECTORIES=100 \
 TRAJECTORY_SUBSET_SEED=42 \
 RUN_ROOT_DIR=playground/Checkpoints \
-bash Bench/Robocasa_tabletop/train_files/run_dino_robocasa.sh
+bash Bench/Robocasa_tabletop/train_files/run_vision_robocasa.sh
 ```
 
 A positional trajectory count takes priority:
 
 ```bash
-bash Bench/Robocasa_tabletop/train_files/run_dino_robocasa.sh 100
+bash Bench/Robocasa_tabletop/train_files/run_vision_robocasa.sh 100
 ```
 
-### Visual encoder + CLIP text: `Dinov3CLIPGR00T`
+### Visual encoder + CLIP text: `VisionCLIPGR00T`
 
 ```bash
-bash Bench/Robocasa_tabletop/train_files/run_dinov3_clip_robocasa.sh
+bash Bench/Robocasa_tabletop/train_files/run_vision_clip_robocasa.sh
 ```
 
 ```bash
@@ -92,19 +100,19 @@ VISION_MODEL=dinov3_base \
 DATA_ROOT_DIR=playground/Datasets/nvidia/PhysicalAI-Robotics-GR00T-X-Embodiment-Sim \
 NUM_TRAJECTORIES=100 \
 TRAJECTORY_SUBSET_SEED=42 \
-bash Bench/Robocasa_tabletop/train_files/run_dinov3_clip_robocasa.sh
+bash Bench/Robocasa_tabletop/train_files/run_vision_clip_robocasa.sh
 ```
 
-### VLM visual tokens + CLIP text: `QwenVisionGR00T`
+### VLM visual tokens + CLIP text: `VLMVisionGR00T`
 
 ```bash
 BASE_VLM=playground/Pretrained_models/Xiaomi-Robotics \
 DATA_ROOT_DIR=playground/Datasets/nvidia/PhysicalAI-Robotics-GR00T-X-Embodiment-Sim \
 RUN_ROOT_DIR=playground/Checkpoints \
-bash Bench/Robocasa_tabletop/train_files/run_qwenvision_robocasa.sh
+bash Bench/Robocasa_tabletop/train_files/run_vlm_robocasa.sh
 ```
 
-To train with layer 16 instead of the default final VLM layer, add this argument to the `accelerate launch` command in `run_qwenvision_robocasa.sh`:
+To train with layer 16 instead of the default final VLM layer, add this argument to the `accelerate launch` command in `run_vlm_robocasa.sh`:
 
 ```bash
   --framework.vision_text_fusion.vlm_layer_idx 16 \
@@ -116,17 +124,17 @@ Place it with the other `--framework.*` arguments. Omit the line, or use `-1`, t
 
 | Variable / setting | Used by | Meaning |
 | --- | --- | --- |
-| `VISION_MODEL` | DinoGR00T, Dinov3CLIPGR00T | Encoder shorthand or supported model ID. |
-| `BASE_VLM` | QwenVisionGR00T | Local VLM directory or supported model ID. |
+| `VISION_MODEL` | VisionGR00T, VisionCLIPGR00T | Encoder shorthand or supported model ID. |
+| `BASE_VLM` | VLMVisionGR00T | Local VLM directory or supported model ID. |
 | `DATA_ROOT_DIR` | All three launchers | Root containing the downloaded GR1 task folders. |
-| `NUM_TRAJECTORIES` | DinoGR00T, Dinov3CLIPGR00T | Maximum trajectories per configured task. |
-| `TRAJECTORY_SUBSET_SEED` | DinoGR00T, Dinov3CLIPGR00T | Seed for deterministic subset selection. |
+| `NUM_TRAJECTORIES` | VisionGR00T, VisionCLIPGR00T | Maximum trajectories per configured task. |
+| `TRAJECTORY_SUBSET_SEED` | VisionGR00T, VisionCLIPGR00T | Seed for deterministic subset selection. |
 | `RUN_ROOT_DIR` | All three launchers | Checkpoint and run-output root. |
 | `data_mix` | Launcher/YAML | Dataset mixture; provided recipes use `fourier_gr1_unified_1`. |
 | `run_id` | Shell launcher or YAML | Experiment directory name. Use a unique name for each run. |
 | `CUDA_VISIBLE_DEVICES` | Shell launcher | Training GPUs. Keep it consistent with Accelerate `--num_processes`. |
 
-The complete encoder and VLM catalog is in the [root README](../../README.md#visual-encoder-support).
+The complete encoder and VLM catalog is in the [root README](../../README.md#policy).
 
 ## 🧰 3. Prepare the RoboCasa simulator
 

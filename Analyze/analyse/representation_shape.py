@@ -56,7 +56,7 @@ def norm_grid(z,target=14):
  return z
 
 def load_enc(name,device):
- sys.path.insert(0,str(ROOT/'Policy')); from hivebench.model.framework.DinoGR00T import _build_vision_encoder
+ sys.path.insert(0,str(ROOT/'Policy')); from hivebench.model.framework.VisionGR00T import _build_vision_encoder
  base=FT_BASE.get(name,name); model=_build_vision_encoder(base).eval().to(device)
  if name in FT_CHECKPOINTS:
   from Analyze.analyse.idm_fdm_model import load_finetuned_vision_encoder

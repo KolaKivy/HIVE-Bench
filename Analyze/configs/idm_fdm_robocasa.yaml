@@ -1,6 +1,6 @@
-# 16-step RoboCasa GR1 IDM probe using HIVE-Bench DinoGR00T encoder interfaces.
+# 16-step RoboCasa GR1 IDM probe using HIVE-Bench VisionGR00T encoder interfaces.
 dataset_type: robocasa
-# `encoder_name` is passed directly to DinoGR00T._build_vision_encoder.
+# `encoder_name` is passed directly to VisionGR00T._build_vision_encoder.
 mode: idm
 encoder_name: dinov3
 # Full policy checkpoint; only vision_encoder.* is restored when non-null.

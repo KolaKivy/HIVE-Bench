@@ -8,11 +8,11 @@ HIVE-Bench provides frozen-encoder representation probes through [train_idm_fdm.
 
 ### Supported representation sources
 
-The probe launcher supports the visual encoders constructed by `hivebench.model.framework.DinoGR00T._build_vision_encoder` and three visual-language models (VLMs).
+The probe launcher supports the visual encoders constructed by `hivebench.model.framework.VisionGR00T._build_vision_encoder` and three visual-language models (VLMs).
 
 | Representation source | Launcher identifiers |
 |---|---|
-| DinoGR00T visual encoders | Any supported DinoGR00T factory identifier, such as `dinov2_base`, `dinov3_base`, `clip`, `siglip`, `radio`, and `lingbot_large` |
+| VisionGR00T visual encoders | Any supported VisionGR00T factory identifier, such as `dinov2_base`, `dinov3_base`, `clip`, `siglip`, `radio`, and `lingbot_large` |
 | Qwen3-VL | `qwen3`, `qwen3_layer16` |
 | DepthVLM | `depthvlm`, `depthvlm_layer16` |
 | Xiaomi Robotics-1 | `xiaomi`, `xiaomi_layer16` |
@@ -79,7 +79,8 @@ Edit `BASE_DIR` in each script for your dataset location and `TASK_DIRS` for the
 
 | Group | Included analysis identifiers |
 |---|---|
-| Single-frame | `avg_token_cos`, `dist_sim_decay`, `mean_token_norm`, `neighbor_sim`, `token_cov_rank`, `token_norm_entropy`, `token_norm_var`, `token_to_global`, `frequency_metrics`, `within_between_var` |
+| Single-frame | `avg_token_cos`, `dist_sim_decay`, `mean_token_norm`, `neighbor_sim`, `token_cov_rank`, `token_norm_entropy`, `token_norm_var`, `token_to_global`, `frequency_metrics` |
+| Multi-frame | `within_between_var` |
 | Temporal | `temporal_smoothness`, `temporal_cosine_shift`, `lag_distance_curve`, `temporal_variance`, `temporal_effective_rank`, `temporal_spectral_entropy`, `autocorrelation`, `total_trajectory_variation`, `patch_temporal_smoothness`, `temporal_token_norm_entropy` |
 | Multi-video | `trajectory_var_ratio` |
 

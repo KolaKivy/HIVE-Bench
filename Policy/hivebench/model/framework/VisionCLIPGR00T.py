@@ -11,8 +11,8 @@ from hivebench.model.modules.action_model.GR00T_ActionHeader import Flowmatching
 from hivebench.model.tools import FRAMEWORK_REGISTRY
 
 
-@FRAMEWORK_REGISTRY.register('Dinov3CLIPGR00T')
-class Dinov3CLIPGR00T(baseframework):
+@FRAMEWORK_REGISTRY.register('VisionCLIPGR00T')
+class VisionCLIPGR00T(baseframework):
     def __init__(self, config):
         super().__init__()
         self.config = config
@@ -20,11 +20,11 @@ class Dinov3CLIPGR00T(baseframework):
         self.vision_model_name = config.framework.get('vision_model', 'facebook/dinov3-vitb16-pretrain-lvd1689m')
         self.clip_model_name = config.framework.get('clip_model', config.framework.get('text_model', 'openai/clip-vit-base-patch32'))
 
-        # Reuse DinoGR00T's encoder factory so every supported vision backbone
+        # Reuse VisionGR00T's encoder factory so every supported vision backbone
         # shares its own preprocessing and returns [B, N, D] patch tokens.
         # Keep the existing full DINOv3 model id working with its register-token
-        # aware wrapper; all other names/IDs follow DinoGR00T exactly.
-        from hivebench.model.framework.DinoGR00T import _build_vision_encoder
+        # aware wrapper; all other names/IDs follow VisionGR00T exactly.
+        from hivebench.model.framework.VisionGR00T import _build_vision_encoder
         encoder_name = self.vision_model_name
         if encoder_name == 'facebook/dinov3-vitb16-pretrain-lvd1689m':
             encoder_name = 'dinov3'

@@ -1,4 +1,4 @@
-Framework_name=Dinov3CLIPGR00T
+Framework_name=VisionCLIPGR00T
 clip_model=openai/clip-vit-base-patch32
 freeze_module_list='vision_encoder,text_encoder'
 DIT_TYPE="DiT-B"
@@ -25,24 +25,24 @@ run_id=all_task_dinov3_base_robocasa
 export CUDA_VISIBLE_DEVICES=4,5,6,7
 
 output_dir=${run_root_dir}/${run_id}
-mkdir -p ${output_dir}
-cp $0 ${output_dir}/
+mkdir -p "${output_dir}"
+cp "$0" "${output_dir}/"
 
 accelerate launch \
   --main_process_port 10000 \
   --config_file Policy/hivebench/config/deepseeds/deepspeed_zero2.yaml \
   --num_processes 4 \
   Policy/hivebench/training/train.py \
-  --config_yaml ./Bench/Robocasa_tabletop/train_files/dinov3_clip_robocasa.yaml \
-  --framework.name ${Framework_name} \
-  --framework.clip_model ${clip_model} \
-  --framework.action_model.action_model_type ${DIT_TYPE} \
+  --config_yaml ./Bench/Robocasa_tabletop/train_files/vision_clip_robocasa.yaml \
+  --framework.name "${Framework_name}" \
+  --framework.clip_model "${clip_model}" \
+  --framework.action_model.action_model_type "${DIT_TYPE}" \
   "${vision_model_args[@]}" \
-  --datasets.vla_data.data_root_dir ${data_root_dir} \
-  --datasets.vla_data.data_mix ${data_mix} \
+  --datasets.vla_data.data_root_dir "${data_root_dir}" \
+  --datasets.vla_data.data_mix "${data_mix}" \
   "${data_override_args[@]}" \
-  --trainer.freeze_modules ${freeze_module_list} \
+  --trainer.freeze_modules "${freeze_module_list}" \
   --trainer.learning_rate.base 3e-5 \
   --trainer.learning_rate.text_projector 3e-5 \
-  --run_root_dir ${run_root_dir} \
-  --run_id ${run_id}
+  --run_root_dir "${run_root_dir}" \
+  --run_id "${run_id}"

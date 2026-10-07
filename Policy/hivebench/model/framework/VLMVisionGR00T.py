@@ -1,4 +1,4 @@
-# QwenVisionGR00T.py — VLM vision token + CLIP text token → DiT action head
+# VLMVisionGR00T.py — VLM vision token + CLIP text token → DiT action head
 
 
 
@@ -26,9 +26,9 @@ from hivebench.model.modules.action_model.GR00T_ActionHeader import (
 )
 from hivebench.model.tools import FRAMEWORK_REGISTRY
 
-@FRAMEWORK_REGISTRY.register("QwenVisionGR00T")
-class QwenVisionGR00T(baseframework):
-    'QwenVisionGR00T implementation.'
+@FRAMEWORK_REGISTRY.register("VLMVisionGR00T")
+class VLMVisionGR00T(baseframework):
+    'VLMVisionGR00T implementation.'
 
     def __init__(self, config) -> None:
         super().__init__()
@@ -44,10 +44,10 @@ class QwenVisionGR00T(baseframework):
         vlm_hidden = self.vlm.model.config.hidden_size
         vlm_name   = config.framework.qwenvl.base_vlm
         self.vlm_layer_idx = int(getattr(fusion_cfg, "vlm_layer_idx", -1)) if fusion_cfg else -1
-        print(f"[QwenVisionGR00T] vlm_layer_idx={self.vlm_layer_idx}")
+        print(f"[VLMVisionGR00T] vlm_layer_idx={self.vlm_layer_idx}")
 
-        print(f"[QwenVisionGR00T] VLM={vlm_name}")
-        print(f"[QwenVisionGR00T] vlm_hidden={vlm_hidden}")
+        print(f"[VLMVisionGR00T] VLM={vlm_name}")
+        print(f"[VLMVisionGR00T] vlm_hidden={vlm_hidden}")
 
         if freeze_vlm:
             for param in self.vlm.parameters():
@@ -59,7 +59,7 @@ class QwenVisionGR00T(baseframework):
         self.clip_text_model = CLIPTextModel.from_pretrained(clip_id)
         self.clip_tokenizer  = CLIPTokenizer.from_pretrained(clip_id)
         clip_dim = self.clip_text_model.config.hidden_size   # 512
-        print(f"[QwenVisionGR00T] CLIP text hidden={clip_dim}")
+        print(f"[VLMVisionGR00T] CLIP text hidden={clip_dim}")
 
         if freeze_clip:
             for param in self.clip_text_model.parameters():
@@ -68,7 +68,7 @@ class QwenVisionGR00T(baseframework):
         
         self.vision_proj = nn.Linear(vlm_hidden, cross_dim)
         self.text_proj   = nn.Linear(clip_dim,   cross_dim)
-        print(f"[QwenVisionGR00T] cross_attention_dim={cross_dim}")
+        print(f"[VLMVisionGR00T] cross_attention_dim={cross_dim}")
 
         
         config.framework.action_model.hidden_size = cross_dim

@@ -1,4 +1,4 @@
-"""LingBot-Vision backbone adapter for DinoGR00T."""
+"""LingBot-Vision backbone adapter for VisionGR00T."""
 
 from typing import Any
 

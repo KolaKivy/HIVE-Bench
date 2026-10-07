@@ -1,7 +1,7 @@
 # Copyright 2026 HIVE-Bench community. All rights reserved.
 # Licensed under the MIT License.
 
-"""DepthVLM adapter for the QwenVisionGR00T feature interface.
+"""DepthVLM adapter for the VLMVisionGR00T feature interface.
 
 DepthVLM uses a Qwen3-VL-4B backbone plus a DPT depth head. Its official model
 implementation targets Transformers 5.2, while HIVE-Bench currently runs 4.57.

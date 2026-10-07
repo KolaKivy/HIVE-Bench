@@ -8,7 +8,7 @@ from transformers import AutoImageProcessor, AutoModel
 class DinoV3(torch.nn.Module):
     def __init__(
         self,
-        # The Robotwin Dinov3CLIPGR00T checkpoints use DINOv3 ViT-B/16
+        # The Robotwin VisionCLIPGR00T checkpoints use DINOv3 ViT-B/16
         # (hidden size 768), not the ViT-S/16 variant (hidden size 384).
         model_name: str = "facebook/dinov3-vitb16-pretrain-lvd1689m",
         device: str | torch.device = "cuda",

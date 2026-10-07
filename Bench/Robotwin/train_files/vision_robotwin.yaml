@@ -1,26 +1,15 @@
-# RobotWin multi-task: Qwen-Vision tokens + frozen CLIP text tokens -> DiT.
-
-run_id: qwenvision_robotwin_layer16
-run_root_dir: playground/Checkpoints
 seed: 42
 trackers: [jsonl]
 is_debug: false
 
 framework:
-  name: QwenVisionGR00T
-  qwenvl:
-    base_vlm: playground/Pretrained_models/Qwen3-VL-4B-Instruct
-    attn_implementation: flash_attention_2
-  vision_text_fusion:
-    # The launcher explicitly sets this to 16. Omitting it selects the final layer (-1).
-    vlm_layer_idx: 16
-    cross_attention_dim: 1024
-    freeze_vlm: true
-    freeze_clip: true
+  name: VisionGR00T
+  vision_model: dinov2
+
   action_model:
     action_model_type: DiT-B
-    hidden_size: 1024
-    add_pos_embed: true
+    hidden_size: 768               # VisionGR00T overrides this value to match vision_dim.
+    add_pos_embed: True
     max_seq_len: 1024
     action_dim: 14
     state_dim: 14
@@ -35,11 +24,11 @@ framework:
     num_inference_timesteps: 10
     num_target_vision_tokens: 32
     diffusion_model_cfg:
-      cross_attention_dim: 1024
+      cross_attention_dim: 768     # VisionGR00T overrides this value.
       dropout: 0.2
       final_dropout: true
       interleave_self_attention: true
-      norm_type: ada_norm
+      norm_type: "ada_norm"
       num_layers: 16
       positional_embeddings: null
 
@@ -50,11 +39,10 @@ datasets:
     data_mix: robotwin_all
     action_type: abs_qpos
     action_mode: abs
-    sequential_step_sampling: false
+    sequential_step_sampling: False
     default_image_resolution: [3, 224, 224]
     per_device_batch_size: 32
     load_all_data_for_training: true
-    # AgilexDataConfig order: high camera, left wrist, right wrist.
     obs: ["image_0", "image_1", "image_2"]
     image_size: [224, 224]
     video_backend: pyav
@@ -64,20 +52,17 @@ datasets:
 
 trainer:
   epochs: 100
-  max_train_steps: 100000
+  max_train_steps: 40000
   num_warmup_steps: 5000
-  save_interval: 50000
+  save_interval: 20000
   eval_interval: 999999
   learning_rate:
-    base: 1.0e-04
-    vlm: 0.0
+    base: 1e-04
     action_model: 1.0e-04
   lr_scheduler_type: cosine_with_min_lr
   scheduler_specific_kwargs:
     min_lr: 5.0e-07
-  freeze_modules: vlm,clip_text_model
-  loss_scale:
-    vla: 1.0
+  freeze_modules: 'vision_encoder'
   max_grad_norm: 1.0
   warmup_ratio: 0.1
   weight_decay: 0.0

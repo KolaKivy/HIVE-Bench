@@ -1,16 +1,14 @@
 #!/bin/bash
-# HIVE-Bench: RobotWin multi-task training with a pluggable vision encoder + CLIP text.
+# HIVE-Bench: RobotWin multi-task training with Qwen-Vision tokens + CLIP text.
 # Run from the HIVE-Bench root. An optional first argument overrides YAML trajectory count.
-Framework_name=Dinov3CLIPGR00T
-freeze_module_list='text_encoder,vision_encoder'
+
+Framework_name=VLMVisionGR00T
+base_vlm="${BASE_VLM:-playground/Pretrained_models/Qwen3-VL-4B-Instruct}"
+freeze_module_list='vlm,clip_text_model'
 DIT_TYPE=DiT-B
-VISION_MODEL=${VISION_MODEL:-}
-vision_model_args=()
-if [[ -n "${VISION_MODEL}" ]]; then
-  vision_model_args+=(--framework.vision_model "${VISION_MODEL}")
-fi
-config_yaml=./Bench/Robotwin/train_files/dinov3_clip_robotwin.yaml
-run_root_dir=./playground/Checkpoints
+config_yaml=./Bench/Robotwin/train_files/vlm_robotwin.yaml
+run_root_dir="${RUN_ROOT_DIR:-./playground/Checkpoints}"
+
 # With no override, YAML remains the source of truth (500 trajectories by default).
 num_trajectories=${1:-${NUM_TRAJECTORIES:-}}
 trajectory_subset_seed=${TRAJECTORY_SUBSET_SEED:-}
@@ -23,20 +21,23 @@ fi
 if [[ -n "${trajectory_subset_seed}" ]]; then
   data_override_args+=(--datasets.vla_data.trajectory_subset_seed "${trajectory_subset_seed}")
 fi
-run_id=test_lejepa_robotwin_new
-export CUDA_VISIBLE_DEVICES=4,5,6,7
+
+run_id=qwenvision_robotwin_layer16
+export CUDA_VISIBLE_DEVICES=0,1,2,3
 output_dir=${run_root_dir}/${run_id}
 mkdir -p "${output_dir}"
 cp "$0" "${output_dir}/"
+
 accelerate launch \
   --config_file Policy/hivebench/config/deepseeds/deepspeed_zero2.yaml \
   --num_processes 4 \
-  --main_process_port 29501 \
+  --main_process_port 29506 \
   Policy/hivebench/training/train.py \
   --config_yaml "${config_yaml}" \
   --framework.name "${Framework_name}" \
+  --framework.qwenvl.base_vlm "${base_vlm}" \
   --framework.action_model.action_model_type "${DIT_TYPE}" \
-  "${vision_model_args[@]}" \
+  --framework.vision_text_fusion.vlm_layer_idx 16 \
   "${data_override_args[@]}" \
   --trainer.freeze_modules "${freeze_module_list}" \
   --run_root_dir "${run_root_dir}" \

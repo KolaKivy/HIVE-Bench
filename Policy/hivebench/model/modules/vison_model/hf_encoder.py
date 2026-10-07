@@ -1,4 +1,4 @@
-# hf_encoder.py — Vision encoder wrappers for DinoGR00T
+# hf_encoder.py — Vision encoder wrappers for VisionGR00T
 # All backbones expose the same interface:
 #   .num_channels                  int
 #   .forward(pixel_values)         Tensor[B, N, D]   patch tokens, CLS stripped

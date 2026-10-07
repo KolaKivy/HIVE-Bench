@@ -1,5 +1,5 @@
-# qwenvision_robocasa.yaml
-# QwenVisionGR00T combines VLM vision tokens and CLIP text tokens for the DiT head.
+# vlm_robocasa.yaml
+# VLMVisionGR00T combines VLM vision tokens and CLIP text tokens for the DiT head.
 # A shared CLIP text encoder isolates differences between VLM visual representations.
 
 run_root_dir: results/Checkpoints
@@ -8,7 +8,7 @@ trackers: [jsonl]
 is_debug: false
 
 framework:
-  name: QwenVisionGR00T
+  name: VLMVisionGR00T
 
   qwenvl:
     base_vlm: ./playground/Pretrained_models/Qwen3-VL-4B-Instruct  # Replace with the local checkpoint path.

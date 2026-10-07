@@ -25,7 +25,7 @@ def video_path(dataset,task,episode,camera):
 
 def load_model(name,device,checkpoint=None):
  sys.path.insert(0,str(ROOT/'Policy'))
- from hivebench.model.framework.DinoGR00T import _build_vision_encoder
+ from hivebench.model.framework.VisionGR00T import _build_vision_encoder
  m=_build_vision_encoder(name).eval().to(device)
  if checkpoint:
   from Analyze.analyse.idm_fdm_model import load_finetuned_vision_encoder

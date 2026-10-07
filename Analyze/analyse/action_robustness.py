@@ -174,7 +174,7 @@ def checkpoint_paths(root: Path, selected: list[str] | None) -> list[Path]:
         if not (run_dir / "config.yaml").is_file() or not (run_dir / "dataset_statistics.json").is_file():
             raise FileNotFoundError(f"Checkpoint metadata missing next to {checkpoint}")
         paths.append(checkpoint)
-    # HIVE QwenVisionGR00T checkpoints use a separate root and do not follow
+    # HIVE VLMVisionGR00T checkpoints use a separate root and do not follow
     # the all_task_robotwin_* name convention.  Limit automatic discovery to
     # the explicitly supported VLM experiment list above.
     hive_names = HIVE_VLM_RUNS if wanted is None else wanted & HIVE_VLM_RUNS
@@ -322,7 +322,7 @@ def local_vlm_path(config) -> Path:
 
 
 def load_hive_policy(checkpoint: Path):
-    """Load HIVE QwenVisionGR00T checkpoints with local VLM-path remapping."""
+    """Load HIVE VLMVisionGR00T checkpoints with local VLM-path remapping."""
     from hivebench.model.framework import build_framework as build_hive_framework
     from hivebench.model.framework.share_tools import dict_to_namespace as hive_dict_to_namespace
     from hivebench.model.framework.share_tools import read_mode_config as read_hive_mode_config
@@ -330,7 +330,7 @@ def load_hive_policy(checkpoint: Path):
     model_config, norm_stats = read_hive_mode_config(str(checkpoint))
     config = hive_dict_to_namespace(model_config)
     config.trainer.pretrained_checkpoint = None
-    if config.framework.name != "QwenVisionGR00T":
+    if config.framework.name != "VLMVisionGR00T":
         raise ValueError(f"Unsupported HIVE framework: {config.framework.name!r}")
     config.framework.qwenvl.base_vlm = str(local_vlm_path(config))
     model = build_hive_framework(config)

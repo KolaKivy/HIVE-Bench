@@ -12,7 +12,7 @@ original VGGT aggregator (``facebook/VGGT-1B-Commercial``) instead uses
 restored into ``vision_models.vgg_transformer.VGGTModel``.
 
 This module mirrors the policy-side ``VGGTOmegaBackbone``
-(``Policy/hivebench/model/modules/dino_model/hf_encoder.py``) so that analysis
+(``Policy/hivebench/model/modules/vison_model/hf_encoder.py``) so that analysis
 features match the features seen during fine-tuning:
 
     frames -> resize 224 -> aggregator (S=1) -> final patch tokens [B, 196, 2048]
