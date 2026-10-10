@@ -56,7 +56,7 @@ from hivebench.model.tools import FRAMEWORK_REGISTRY
 
 def _build_vision_encoder(vision_model_name: str) -> nn.Module:
     ' build vision encoder function.'
-    from hivebench.model.modules.vison_model import hf_encoder as hfe
+    from hivebench.model.modules.vision_model import hf_encoder as hfe
 
     name = vision_model_name.lower()
 
@@ -158,7 +158,7 @@ def _build_vision_encoder(vision_model_name: str) -> nn.Module:
 
     # Resolve torch.hub DINOv2 identifiers.
     if "/" not in vision_model_name:
-        from hivebench.model.modules.vison_model.dino import get_dino_model
+        from hivebench.model.modules.vision_model.dino import get_dino_model
         return get_dino_model(vision_model_name)
 
     if name == "galilai-group/levjepa-videomix-large":
