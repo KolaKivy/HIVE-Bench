@@ -29,8 +29,9 @@ The RoboTwin demonstrations are published as the `RoboTwin_data/` folder in the 
 ```bash
 pip install -U huggingface_hub
 
-hf download zhengtu666/HIVE-Bench-Data --repo-type dataset \
-  --include "RoboTwin_data/**" --local-dir playground/Datasets
+hf download zhengtu666/HIVE-Bench-Data \
+  --repo-type dataset \
+  --local-dir playground/Datasets/RoboTwin_data
 ```
 
 After the download, the task directories should be available directly under:
