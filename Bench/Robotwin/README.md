@@ -24,13 +24,14 @@ The RoboTwin recipes use three RGB streams—head, left wrist, and right wrist�
 
 ## 📦 1. Download the dataset
 
-The RoboTwin demonstrations are published as the `RoboTwin_data/` folder in the [HIVE-Bench Hugging Face repository](https://huggingface.co/datasets/zhengtu666/HIVE-Bench-Data/tree/main). Download the folder directly with the Hugging Face CLI:
+The RoboTwin demonstrations are published in the [HIVE-Bench Hugging Face repository](https://huggingface.co/datasets/zhengtu666/HIVE-Bench-Data/tree/main). Download the folder directly with the Hugging Face CLI:
 
 ```bash
 pip install -U huggingface_hub
 
-hf download zhengtu666/HIVE-Bench-Data --repo-type dataset \
-  --include "RoboTwin_data/**" --local-dir playground/Datasets
+hf download zhengtu666/HIVE-Bench-Data \
+  --repo-type dataset \
+  --local-dir playground/Datasets/RoboTwin_data
 ```
 
 After the download, the task directories should be available directly under:
